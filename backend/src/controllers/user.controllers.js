@@ -1,5 +1,6 @@
 import userModel from "../models/user.models.js";
 import jsonwebtoken from "jsonwebtoken";
+import { getUserById } from "../service/user.service.js";
 
 export async function registerUser(req, res) {
   try {
@@ -34,7 +35,7 @@ export async function loginUser(req, res) {
   try {
     const { email, password } = req.body;
 
-    const user = await userModel.findOne({ email });
+    const user = await userModel.findOne({ email }).select("+password");
 
     if (!user) {
       return res.status(400).json({ message: "Invalid email or password" });
@@ -65,5 +66,24 @@ export async function loginUser(req, res) {
     res.status(401).json({
       message: "[login route]:-Error logging in user",
     });
+  }
+}
+
+export async function getUserProfile(req, res) {
+  try {
+    const user = req.user;
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({
+      message: "User profile fetched successfully",
+      success: true,
+      user: user,
+    });
+  } catch (err) {
+    console.log(err.message);
+    res
+      .status(401)
+      .json({ message: "[getUserProfile route]:-Error fetching user profile" });
   }
 }
