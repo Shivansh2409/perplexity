@@ -6,7 +6,11 @@ import connectDB from "./src/config/db.js";
 
 connectDB();
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8080;
+
+app.get("/", (req, res) => {
+  res.send("Welcome to the Perplexity API");
+});
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

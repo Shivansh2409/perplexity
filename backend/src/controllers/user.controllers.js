@@ -1,4 +1,5 @@
 import userModel from "../models/user.models.js";
+import jsonwebtoken from "jsonwebtoken";
 
 export async function registerUser(req, res) {
   try {
@@ -23,6 +24,46 @@ export async function registerUser(req, res) {
       },
     });
   } catch (error) {
-    res.status(500).json({ message: "Error registering user" });
+    res
+      .status(401)
+      .json({ message: "[register route]:-Error registering user" });
+  }
+}
+
+export async function loginUser(req, res) {
+  try {
+    const { email, password } = req.body;
+
+    const user = await userModel.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid email or password" });
+    }
+
+    const isMatch = await user.matchPassword(password);
+
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid email or password" });
+    }
+
+    const token = jsonwebtoken.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+    res.cookie("token", token);
+    res.status(200).json({
+      message: "User logged in successfully",
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    console.log(error.message);
+    res.status(401).json({
+      message: "[login route]:-Error logging in user",
+    });
   }
 }
