@@ -2,7 +2,7 @@ import userModel from "../models/user.models.js";
 
 export async function getUserById(userId) {
   try {
-    const user = await userModel.findById(userId).select("-_id");
+    const user = await userModel.findById(userId);
     if (!user) {
       return { success: false, message: "User not found" };
     }

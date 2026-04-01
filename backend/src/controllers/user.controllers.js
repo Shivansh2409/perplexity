@@ -1,6 +1,5 @@
 import userModel from "../models/user.models.js";
 import jsonwebtoken from "jsonwebtoken";
-import { getUserById } from "../service/user.service.js";
 
 export async function registerUser(req, res) {
   try {
