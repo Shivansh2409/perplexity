@@ -43,8 +43,17 @@ export async function generateResponse(message) {
   return response.content;
 }
 
-export async function generateEmbeddings(text) {
-  const embeddings = await google_embeddings.embedQuery(text);
+export async function generateEmbeddings(message) {
+  let textToEmbed;
+  if (Array.isArray(message)) {
+    textToEmbed = message.map((msg) => msg.content).join("\n");
+  } else if (typeof message === "object" && message !== null) {
+    textToEmbed = message.content;
+  } else {
+    textToEmbed = message;
+  }
+
+  const embeddings = await google_embeddings.embedQuery(textToEmbed);
   console.log("Generated embeddings:", embeddings);
   return embeddings;
 }
