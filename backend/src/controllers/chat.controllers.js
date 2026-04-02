@@ -21,30 +21,11 @@ export async function createChat(req, res) {
       title: title,
     });
 
-    const message = await messageModel.create({
-      chatroom: chat._id,
-      owner: userId,
-      content: content,
-      sender: "user",
-    });
-
-    const aiResponse = await generateResponse(content);
-    console.log(aiResponse);
-
-    await messageModel.create({
-      chatroom: chat._id,
-      owner: userId,
-      content: aiResponse,
-      sender: "bot",
-    });
-    const embeddings = await generateEmbeddings(content);
-    chat.embedding = embeddings;
-    await chat.save();
-
     res.status(201).json({
       message: "Chat created successfully",
       success: true,
       chatId: chat._id,
+      title: title,
     });
   } catch (err) {
     console.log(err.message);
