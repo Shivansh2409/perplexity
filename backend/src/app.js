@@ -7,7 +7,13 @@ import chatRoutes from "./routes/chat.routes.js";
 import accessRoutes from "./routes/access.routes.js";
 
 const app = express();
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST", "PATCH"],
+    credentials: true,
+  }),
+);
 app.use(express.json());
 app.use(cookies());
 

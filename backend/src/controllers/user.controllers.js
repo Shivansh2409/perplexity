@@ -14,9 +14,13 @@ export async function registerUser(req, res) {
     const user = await userModel.create({ username, email, password });
     await user.save();
 
+    const token = jsonwebtoken.sign({ id: user._id }, process.env.JWT_SECRET);
+    res.cookie("token", token);
+
     res.status(201).json({
       message: "User registered successfully",
       success: true,
+      token,
       user: {
         id: user._id,
         username: user.username,
