@@ -8,7 +8,7 @@ export const router = createBrowserRouter([
     path: "/",
     element: (
       <Protect>
-        <div>Home</div>
+        <div>home</div>
       </Protect>
     ),
   },

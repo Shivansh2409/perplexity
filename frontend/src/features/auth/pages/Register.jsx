@@ -1,14 +1,36 @@
 import React, { useState } from "react";
 import { Link } from "react-router";
+import { useAuth } from "../hooks/useAuth";
+import { useNavigate } from "react-router";
+import { useSelector } from "react-redux";
 
 const Register = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  const [loginError, setLoginError] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+  const authState = useSelector((state) => state.auth);
+  const { register } = useAuth();
 
-  const handleSubmit = (e) => {
+  // Watch for successful login and navigate
+  React.useEffect(() => {
+    if (authState.user && !authState.loading) {
+      navigate("/");
+    }
+  }, [authState.user, authState.loading, navigate]);
+
+  // Display login errors
+  React.useEffect(() => {
+    if (authState.error && !authState.loading) {
+      setLoginError(authState.error);
+    }
+  }, [authState.error, authState.loading]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: Connect to Auth Hook -> API later
+    await register({ username, email, password });
+    setLoginError("");
     console.log("Registration attempt:", { username, email, password });
   };
 
@@ -24,6 +46,11 @@ const Register = () => {
           </p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-5">
+          {loginError && (
+            <div className="p-3 bg-red-900/20 border border-red-700/50 rounded-lg text-red-400 text-sm">
+              {loginError}
+            </div>
+          )}
           <div>
             <label className="block text-sm font-medium text-[#c4c4c4] mb-1">
               Username

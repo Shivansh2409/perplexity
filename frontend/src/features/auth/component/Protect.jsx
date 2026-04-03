@@ -1,11 +1,32 @@
 import React, { useEffect } from "react";
 import { Navigate, Outlet } from "react-router";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { useAuth } from "../hooks/useAuth";
+import { hydrateAuthSuccess, hydrateAuthFailure } from "../auth.slice";
 
 const Protect = ({ children }) => {
+  const dispatch = useDispatch();
   const { user, loading } = useSelector((state) => state.auth);
+  const { getCurrentUser } = useAuth();
 
-  console.log("Protect component - auth state:", { user, loading });
+  useEffect(() => {
+    const getUser = async () => {
+      try {
+        const res = await getCurrentUser();
+        if (res && res.user) {
+          dispatch(hydrateAuthSuccess(res));
+        } else {
+          dispatch(hydrateAuthFailure("No user found"));
+        }
+      } catch (err) {
+        console.error("Error fetching current user:", err);
+        dispatch(hydrateAuthFailure(err.response?.data?.message || "Authentication failed"));
+      }
+    };
+
+    getUser();
+  }, [dispatch]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0d0d0d] text-[#ececec] font-sans">
@@ -19,12 +40,12 @@ const Protect = ({ children }) => {
   }
 
   // If no user is found in the auth state, redirect to the login page
-  if (!user) {
+  if (!user && !loading) {
     return <Navigate to="/login" replace />;
   }
 
   // Render children if passed directly, otherwise render nested routes via Outlet
-  return children ? children : <Outlet />;
+  return children;
 };
 
 export default Protect;

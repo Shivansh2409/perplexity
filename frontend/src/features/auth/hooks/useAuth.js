@@ -4,6 +4,9 @@ import {
   loginSuccess,
   loginFailure,
   logout,
+  registerStart,
+  registerSuccess,
+  registerFailure,
   hydrateAuthStart,
   hydrateAuthSuccess,
   hydrateAuthFailure,
@@ -20,6 +23,7 @@ export const useAuth = () => {
       const response = await authApi.login(credentials);
       dispatch(loginSuccess(response.data));
     } catch (err) {
+      console.log(err);
       dispatch(loginFailure(err.response?.data?.message || "Login failed"));
     }
   };
@@ -53,7 +57,7 @@ export const useAuth = () => {
     try {
       const response = await authApi.getCurrentUser();
       dispatch(hydrateAuthSuccess(response.data));
-      console.log(response);
+      return response.data;
     } catch (err) {
       console.error(
         "Failed to fetch current user:",
