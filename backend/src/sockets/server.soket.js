@@ -20,16 +20,21 @@ export const initSocketServer = (httpServer) => {
     socket.join(userId);
     console.log("Client connected: ", socket.id);
 
-    if (socket.chat.participants.some((id) => id.toString() === userId)) {
-      const room = socket.chat._id.toString();
-      console.log("Client connected to room : ", room);
-      socket.join(room);
-    } else {
-      console.log("Unauthorized client attempted to connect: ", socket.id);
+    if (socket.chat) {
+      if (socket.chat.participants.some((id) => id.toString() === userId)) {
+        const room = socket.chat._id.toString();
+        console.log("Client connected to room : ", room);
+        socket.join(room);
+      } else {
+        console.log(
+          "Unauthorized client attempted to connect to chat: ",
+          socket.chat._id,
+        );
+      }
     }
 
     socket.on("message", (content) => {
-      handleUserMessage(socket, content);
+      if (socket.chat) handleUserMessage(socket, content);
     });
 
     socket.on("disconnect", () => {
