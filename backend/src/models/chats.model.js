@@ -18,6 +18,15 @@ const chatSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    permissions: {
+      type: Map,
+      of: {
+        type: String,
+        enum: ["no-access", "view-only", "edit"],
+        default: "no-access",
+      },
+      default: new Map(),
+    },
     embedding: {
       type: [Number],
       default: [],

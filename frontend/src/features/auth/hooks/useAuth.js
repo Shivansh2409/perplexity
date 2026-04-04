@@ -1,4 +1,4 @@
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   loginStart,
   loginSuccess,
@@ -16,6 +16,7 @@ import { authApi } from "../service/auth.api";
 
 export const useAuth = () => {
   const dispatch = useDispatch();
+  const auth = useSelector((state) => state.auth);
 
   const login = async (credentials) => {
     dispatch(loginStart());
@@ -68,5 +69,12 @@ export const useAuth = () => {
     }
   };
 
-  return { login, register, logoutUser, getCurrentUser };
+  return {
+    login,
+    register,
+    logoutUser,
+    getCurrentUser,
+    token: auth.token,
+    user: auth.user,
+  };
 };

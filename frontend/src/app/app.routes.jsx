@@ -3,14 +3,29 @@ import Login from "../features/auth/pages/Login";
 import Register from "../features/auth/pages/Register";
 import Protect from "../features/auth/component/Protect";
 
+// Legacy imports removed
+import ChatLayout from "../features/chat/pages/ChatLayout";
+import NewChatContent from "../features/chat/pages/NewChatContent";
+import ChatContent from "../features/chat/pages/ChatContent";
 export const router = createBrowserRouter([
+  // Legacy CreateChat route removed
   {
     path: "/",
     element: (
       <Protect>
-        <div>home</div>
+        <ChatLayout />
       </Protect>
     ),
+    children: [
+      {
+        index: true,
+        element: <NewChatContent />,
+      },
+      {
+        path: "chat/:chatId",
+        element: <ChatContent />,
+      },
+    ],
   },
   {
     path: "/login",
@@ -21,5 +36,3 @@ export const router = createBrowserRouter([
     element: <Register />,
   },
 ]);
-
-//

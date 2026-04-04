@@ -120,11 +120,14 @@ export async function updateRequestStatus(req, res) {
       const chat = await Chat.findById(request.chat);
       if (chat && !chat.participants.includes(request.requester)) {
         chat.participants.push(request.requester);
+        // Set default permission to "view-only" when approved
+        chat.permissions.set(request.requester.toString(), "view-only");
         await chat.save();
       }
       io.to(request.requester.toString()).emit("access_granted", {
         chatId: request.chat,
         title: chat.title,
+        permission: "view-only",
       });
     } else {
       io.to(request.requester.toString()).emit("access_rejected", {
@@ -139,5 +142,86 @@ export async function updateRequestStatus(req, res) {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Error updating request status" });
+  }
+}
+
+export async function updateUserPermission(req, res) {
+  try {
+    const { chatId, userId } = req.params;
+    const { permission } = req.body;
+    const currentUserId = req.user._id;
+
+    if (!["no-access", "view-only", "edit"].includes(permission)) {
+      return res.status(400).json({ message: "Invalid permission level" });
+    }
+
+    const chat = await Chat.findById(chatId);
+    if (!chat) {
+      return res.status(404).json({ message: "Chat not found" });
+    }
+
+    // Only the chat owner can change permissions
+    if (!chat.createdBy.equals(currentUserId)) {
+      return res
+        .status(403)
+        .json({ message: "Only the chat owner can manage permissions" });
+    }
+
+    // Cannot change permission for the owner
+    if (chat.createdBy.equals(userId)) {
+      return res
+        .status(400)
+        .json({ message: "Cannot change permission for chat owner" });
+    }
+
+    chat.permissions.set(userId, permission);
+    await chat.save();
+
+    const io = getIO();
+    io.to(userId).emit("permission_updated", {
+      chatId: chatId,
+      permission: permission,
+    });
+
+    res.status(200).json({
+      message: "Permission updated successfully",
+      success: true,
+      permission: permission,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error updating permission" });
+  }
+}
+
+export async function getUserPermission(req, res) {
+  try {
+    const { chatId } = req.params;
+    const userId = req.user._id;
+
+    const chat = await Chat.findById(chatId);
+    if (!chat) {
+      return res.status(404).json({ message: "Chat not found" });
+    }
+
+    // Owner has full edit access
+    if (chat.createdBy.equals(userId)) {
+      return res.status(200).json({
+        success: true,
+        permission: "edit",
+        isOwner: true,
+      });
+    }
+
+    const permission = chat.permissions.get(userId.toString()) || "no-access";
+
+    res.status(200).json({
+      success: true,
+      permission: permission,
+      isOwner: false,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error fetching permission" });
   }
 }

@@ -21,6 +21,47 @@ const messageSchema = new mongoose.Schema(
       enum: ["user", "bot"],
       default: "user",
     },
+    // Reactions: mapping of emoji to array of user IDs
+    reactions: {
+      type: Map,
+      of: [mongoose.Schema.Types.ObjectId],
+      default: new Map(),
+    },
+    // Pinned status and who pinned it
+    isPinned: {
+      type: Boolean,
+      default: false,
+    },
+    pinnedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+    pinnedAt: {
+      type: Date,
+      default: null,
+    },
+    // Saved messages: mapping of user ID to true if saved
+    savedBy: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "User",
+      default: [],
+    },
+    // Reply to another message (threading)
+    replyTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Message",
+      default: null,
+    },
+    // Edit history
+    isEdited: {
+      type: Boolean,
+      default: false,
+    },
+    editedAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true },
 );

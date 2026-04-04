@@ -1,0 +1,51 @@
+.permission-gate {
+  width: 100%;
+  height: 100%;
+}
+
+.permission-denied {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 40px 20px;
+  background-color: #fafafa;
+  color: #666666;
+}
+
+.denied-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  margin-bottom: 20px;
+  background-color: #ffe0e0;
+  border-radius: 50%;
+  color: #d32f2f;
+}
+
+.denied-message {
+  margin: 0;
+  font-size: 16px;
+  text-align: center;
+  max-width: 350px;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .permission-denied {
+    padding: 20px;
+  }
+
+  .denied-icon {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 16px;
+  }
+
+  .denied-message {
+    font-size: 14px;
+  }
+}

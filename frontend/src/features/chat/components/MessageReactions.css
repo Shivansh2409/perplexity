@@ -1,0 +1,123 @@
+.message-reactions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  flex-wrap: wrap;
+}
+
+.reactions-display {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.reaction-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: #f0f0f0;
+  border: 1px solid #e0e0e0;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.reaction-button:hover:not(:disabled) {
+  background: #e0e0e0;
+  transform: scale(1.1);
+}
+
+.reaction-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.reaction-button .emoji {
+  font-size: 16px;
+}
+
+.reaction-button .count {
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+}
+
+.add-reaction-wrapper {
+  position: relative;
+}
+
+.add-reaction-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.add-reaction-btn:hover:not(:disabled) {
+  background: #f0f0f0;
+  border-color: #d0d0d0;
+}
+
+.add-reaction-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.emoji-picker {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  z-index: 100;
+  animation: popIn 0.2s ease;
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.emoji-option {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.emoji-option:hover:not(:disabled) {
+  background: #f0f0f0;
+  transform: scale(1.2);
+}
+
+.emoji-option:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

@@ -1,4 +1,5 @@
 import { Server } from "socket.io";
+import chatModel from "../models/chats.model.js";
 import { socketAuthMiddleware } from "../middleware/socket.middleware.js";
 import { handleUserMessage } from "../service/socket.service.js";
 
@@ -20,21 +21,85 @@ export const initSocketServer = (httpServer) => {
     socket.join(userId);
     console.log("Client connected: ", socket.id);
 
-    if (socket.chat) {
-      if (socket.chat.participants.some((id) => id.toString() === userId)) {
-        const room = socket.chat._id.toString();
-        console.log("Client connected to room : ", room);
-        socket.join(room);
-      } else {
-        console.log(
-          "Unauthorized client attempted to connect to chat: ",
-          socket.chat._id,
-        );
-      }
-    }
+    // Dynamic room joining handled via client "join_room" event
 
-    socket.on("message", (content) => {
-      if (socket.chat) handleUserMessage(socket, content);
+    socket.on("join_room", async (data, callback) => {
+      const { chatId } = data;
+      if (!chatId) {
+        callback({ success: false, error: "Missing chatId" });
+        return;
+      }
+
+      try {
+        const chat = await chatModel.findById(chatId);
+        if (!chat) {
+          callback({ success: false, error: "Chat not found" });
+          return;
+        }
+
+        if (
+          !chat.participants.some(
+            (id) => id.toString() === socket.user.user._id.toString(),
+          )
+        ) {
+          callback({ success: false, error: "Not a participant" });
+          return;
+        }
+
+        const room = chatId;
+        socket.chat = chat;
+        socket.join(room);
+        console.log(`Socket ${socket.id} joined room ${room}`);
+        callback({ success: true, room });
+      } catch (error) {
+        callback({ success: false, error: error.message });
+      }
+    });
+
+    socket.on("send_message", async (data, callback) => {
+      const { chatId, content } = data;
+      if (!chatId || !content) {
+        callback({ success: false, error: "Missing chatId or content" });
+        return;
+      }
+
+      try {
+        socket.chat = await chatModel.findById(chatId);
+        if (!socket.chat) {
+          callback({ success: false, error: "Chat not found" });
+          return;
+        }
+
+        if (
+          !socket.chat.participants.some(
+            (id) => id.toString() === socket.user.user._id.toString(),
+          )
+        ) {
+          callback({ success: false, error: "Unauthorized" });
+          return;
+        }
+
+        await handleUserMessage(socket, content);
+        callback({ success: true });
+      } catch (error) {
+        callback({ success: false, error: error.message });
+      }
+    });
+
+    socket.on("leave_room", async (data, callback) => {
+      const { chatId } = data;
+      if (!chatId) {
+        callback({ success: false, error: "Missing chatId" });
+        return;
+      }
+
+      try {
+        socket.leave(chatId);
+        console.log(`Socket ${socket.id} left room ${chatId}`);
+        callback({ success: true });
+      } catch (error) {
+        callback({ success: false, error: error.message });
+      }
     });
 
     socket.on("disconnect", () => {
