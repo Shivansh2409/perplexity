@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router";
 import { useChat } from "../hooks/useChat";
@@ -7,19 +7,35 @@ import { addMessage } from "../chat.slice";
 const ChatContent = () => {
   const { chatId } = useParams();
   const dispatch = useDispatch();
+  const [inputValue, setInputValue] = useState("");
+  const [sending, setSending] = useState(false);
   const { currentMessages, currentChat, loading } = useSelector(
     (state) => state.chat,
   );
   const { sendMessage, messages, connected, permissions } = useChat(chatId);
 
-  useEffect(() => {
-    if (messages.length) {
-      dispatch(addMessage(messages[messages.length - 1]));
-    }
-  }, [messages, dispatch]);
-
   const handleSend = async () => {
-    await sendMessage("Hello from useChat hook!");
+    if (!inputValue.trim() || !connected || sending) return;
+
+    const userMessage = {
+      _id: Date.now().toString(),
+      content: inputValue,
+      sender: "user",
+      timestamp: new Date().toISOString(),
+    };
+
+    // Add user message to Redux immediately for instant display
+    dispatch(addMessage(userMessage));
+    setInputValue("");
+    setSending(true);
+
+    try {
+      await sendMessage(inputValue);
+    } catch (error) {
+      console.error("Send failed:", error);
+    } finally {
+      setSending(false);
+    }
   };
 
   if (loading) {
@@ -59,7 +75,7 @@ const ChatContent = () => {
       <div className="flex-1 overflow-y-auto px-8 py-6 space-y-4">
         {currentMessages.map((msg) => (
           <div
-            key={msg.id}
+            key={msg._id || msg.id || `${msg.sender}-${msg.timestamp}`}
             className={`flex ${msg.sender === "bot" ? "" : "flex-row-reverse"}`}
           >
             <div
@@ -72,7 +88,9 @@ const ChatContent = () => {
               <p className="text-sm leading-relaxed">{msg.content}</p>
               <div className="flex items-center gap-2 mt-2 opacity-75">
                 <span className="text-xs">
-                  {new Date(msg.timestamp).toLocaleTimeString()}
+                  {msg.timestamp
+                    ? new Date(msg.timestamp).toLocaleTimeString()
+                    : new Date().toLocaleTimeString()}
                 </span>
                 {msg.isEdited && (
                   <span className="text-xs italic text-blue-400">edited</span>
@@ -87,9 +105,12 @@ const ChatContent = () => {
       <div className="p-6 border-t border-gray-900 bg-gradient-to-t from-gray-950/50">
         <div className="max-w-2xl mx-auto flex gap-3">
           <textarea
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
             placeholder="Ask anything... (Ctrl+Enter to send)"
             className="flex-1 p-4 bg-gray-950/50 border border-gray-800 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent text-sm shadow-inner placeholder-gray-500 backdrop-blur-sm"
             rows="1"
+            disabled={sending}
             onKeyPress={(e) => {
               if (e.key === "Enter" && !e.shiftKey && e.ctrlKey) {
                 e.preventDefault();
@@ -99,10 +120,10 @@ const ChatContent = () => {
           />
           <button
             onClick={handleSend}
-            disabled={!connected}
+            disabled={!connected || !inputValue.trim() || sending}
             className="p-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 disabled:from-gray-600 disabled:to-gray-700 rounded-xl transition-all shadow-lg hover:shadow-xl text-white font-medium whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Send
+            {sending ? "Sending..." : "Send"}
           </button>
         </div>
         <p className="text-xs text-gray-500 text-center mt-2">

@@ -1,11 +1,12 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+// Import chatAPI at runtime to avoid circular dependencies
+const { chatAPI } = await import("../chat/service/chat.api.js");
 
+// Async Thunks
 export const createChat = createAsyncThunk(
   "chat/createChat",
   async (content, { rejectWithValue }) => {
     try {
-      // Import chatAPI at runtime to avoid circular dependencies
-      const { chatAPI } = await import("../chat/service/chat.api.js");
       const response = await chatAPI.createChat(content);
       // Extract data from axios response
       const responseData = response.data || response;

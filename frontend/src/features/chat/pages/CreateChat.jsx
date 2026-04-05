@@ -26,11 +26,16 @@ const CreateChat = () => {
     if (inputValue.trim()) {
       try {
         const result = await dispatch(createChat(inputValue.trim())).unwrap();
-        dispatch(setCurrentChat(result));
-        const updatedChats = [result, ...chats];
-        localStorage.setItem("mockChats", JSON.stringify(updatedChats));
+        // Normalize result to have _id property
+        const normalizedChat = {
+          ...result,
+          _id: result._id || result.chatId,
+          id: result._id || result.chatId, // Map chatId to id for sidebar
+        };
+        dispatch(setCurrentChat(normalizedChat));
+        const updatedChats = [normalizedChat, ...chats];
         dispatch({ type: "chat/setChats", payload: updatedChats });
-        navigate(`/chat/${result.chatId}`);
+        navigate(`/chat/${normalizedChat._id}`);
         setInputValue("");
       } catch (err) {
         console.error("Create chat error:", err);
@@ -40,7 +45,7 @@ const CreateChat = () => {
 
   const handleChatClick = (chat) => {
     dispatch(setCurrentChat(chat));
-    navigate(`/chat/${chat.id}`);
+    navigate(`/chat/${chat._id || chat.id}`);
   };
 
   const handleKeyPress = (e) => {
@@ -70,7 +75,7 @@ const CreateChat = () => {
           {chats.length ? (
             chats.map((chat) => (
               <div
-                key={chat.id}
+                key={chat._id || chat.id}
                 className="p-4 hover:bg-gray-900/50 cursor-pointer mx-2 rounded-xl transition-all group border-l-4 border-transparent hover:border-cyan-400 hover:shadow-sm"
                 onClick={() => handleChatClick(chat)}
               >
