@@ -17,6 +17,7 @@ export const chatAPI = {
   flowUpChat: async (chatId, content) =>
     api.post(`chat/flow-up-chat/${chatId}`, { content }),
   getChat: async (chatId) => api.get(`chat/get-chat/${chatId}`),
+  getAllChats: async () => await api.get("chat/all"),
 
   // Reactions
   addReaction: async (messageId, emoji) =>
@@ -73,6 +74,7 @@ export const useChatAPI = () => {
     createChat: (...args) => withLoading(chatAPI.createChat, ...args),
     flowUpChat: (...args) => withLoading(chatAPI.flowUpChat, ...args),
     getChat: (...args) => withLoading(chatAPI.getChat, ...args),
+    getAllChats: (...args) => withLoading(chatAPI.getAllChats, ...args),
 
     // Messages
     addReaction: (...args) => withLoading(chatAPI.addReaction, ...args),

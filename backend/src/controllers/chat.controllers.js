@@ -439,3 +439,25 @@ export async function getSavedMessages(req, res) {
     });
   }
 }
+
+// Get All Chats
+
+export async function getAllChats(req, res) {
+  try {
+    const userId = req.user.id;
+
+    const chats = await chatModel.find({ participants: userId });
+
+    res.status(200).json({
+      message: "Chats fetched successfully",
+      success: true,
+      chats,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      message: "[getAllChats route]:-Error fetching chats",
+      success: false,
+    });
+  }
+}

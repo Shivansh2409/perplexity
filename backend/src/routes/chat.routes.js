@@ -13,6 +13,7 @@ import {
   editMessage,
   getPinnedMessages,
   getSavedMessages,
+  getAllChats,
 } from "../controllers/chat.controllers.js";
 
 const chatRoute = express.Router();
@@ -21,6 +22,7 @@ const chatRoute = express.Router();
 chatRoute.post("/create-chat", authenticateUser, createChat);
 chatRoute.post("/flow-up-chat/:chatId", authenticateUser, flowUpChat);
 chatRoute.get("/get-chat/:chatId", authenticateUser, getChat);
+chatRoute.get("/all", authenticateUser, getAllChats);
 
 // Unique features routes - Reactions
 chatRoute.post("/message/:messageId/reaction", authenticateUser, addReaction);

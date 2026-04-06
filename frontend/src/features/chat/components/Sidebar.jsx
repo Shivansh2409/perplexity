@@ -3,10 +3,13 @@ import { Plus } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { createChat } from "../chat.slice";
 import { useNavigate } from "react-router";
+import { useEffect } from "react";
+import { fetchChats } from "../hooks/useChat";
 
-const Sidebar = ({ chats }) => {
+const Sidebar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { chats } = useSelector((state) => state.chat);
   const loading = useSelector((state) => state.chat.loading);
 
   const handleNewChat = async () => {
@@ -21,6 +24,10 @@ const Sidebar = ({ chats }) => {
   const handleChatSelect = (chatId) => {
     navigate(`/chat/${chatId}`);
   };
+
+  useEffect(() => {
+    fetchChats(dispatch);
+  }, [dispatch]);
 
   return (
     <div className="w-80 border-r border-gray-900 flex flex-col bg-[#0a0a0a]">

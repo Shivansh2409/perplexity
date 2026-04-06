@@ -10,6 +10,20 @@ import {
 } from "../chat.slice";
 import { useAuth } from "../../auth/hooks/useAuth";
 
+// Standalone function - can be called directly from anywhere
+export const fetchChats = async (dispatch) => {
+  try {
+    const response = await chatAPI.getAllChats();
+    const chatsData = response.data || response;
+    dispatch(setChats(chatsData.chats || []));
+    console.log("Fetched chats:", chatsData);
+    return chatsData;
+  } catch (error) {
+    console.error("Failed to fetch chats:", error);
+    throw error;
+  }
+};
+
 export const useChat = (chatId) => {
   const dispatch = useDispatch();
   const { token } = useAuth();

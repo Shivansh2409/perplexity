@@ -10,6 +10,7 @@ const NewChatContent = () => {
   const navigate = useNavigate();
   const { chats } = useSelector((state) => state.chat);
   const [inputValue, setInputValue] = useState("");
+  console.log("from new chat", chats);
 
   const handleSend = async () => {
     if (inputValue.trim()) {
