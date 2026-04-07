@@ -7,6 +7,7 @@ import {
   setCurrentChat,
   setChats,
   setLoading,
+  setMessages,
 } from "../chat.slice";
 import { useAuth } from "../../auth/hooks/useAuth";
 
@@ -16,7 +17,6 @@ export const fetchChats = async (dispatch) => {
     const response = await chatAPI.getAllChats();
     const chatsData = response.data || response;
     dispatch(setChats(chatsData.chats || []));
-    console.log("Fetched chats:", chatsData);
     return chatsData;
   } catch (error) {
     console.error("Failed to fetch chats:", error);
@@ -28,7 +28,7 @@ export const useChat = (chatId) => {
   const dispatch = useDispatch();
   const { token } = useAuth();
   const { currentChat, chats } = useSelector((state) => state.chat);
-  const [messages, setMessages] = useState([]);
+  // const [messages, setMessages] = useState([]);
   const [connected, setConnected] = useState(false);
   const [permissions, setPermissions] = useState("loading");
   const [localLoading, setLocalLoading] = useState(false);
@@ -76,7 +76,8 @@ export const useChat = (chatId) => {
         ...chatData.chat,
       };
       dispatch(setCurrentChat(cleanChat));
-      setMessages(chatData.message || []);
+      dispatch(setMessages(chatData.message || []));
+      // setMessages(chatData.message || []);
 
       // Permission
       const permissionResponse = await chatAPI.getUserPermission(chatId);
@@ -101,7 +102,8 @@ export const useChat = (chatId) => {
     if (!connected) return;
 
     const handleNewMessage = (message) => {
-      setMessages((prev) => [...prev, message]);
+      // setMessages((prev) => [...prev, message]);
+      console.log(message);
       dispatch(addMessage(message));
     };
 
@@ -124,9 +126,9 @@ export const useChat = (chatId) => {
     if (!chatId || !content.trim() || !connected) return;
 
     try {
-      const response = await chatAPI.flowUpChat(chatId, content);
+      // const response = await chatAPI.flowUpChat(chatId, content);
       socketManager.sendMessage(chatId, content);
-      return response;
+      // return response;
     } catch (error) {
       console.error("Send message failed:", error);
       throw error;
@@ -134,7 +136,6 @@ export const useChat = (chatId) => {
   };
 
   return {
-    messages,
     connected,
     loading: localLoading,
     permissions,

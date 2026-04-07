@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import cookies from "cookie-parser";
+import morgan from "morgan";
 
 import userRoutes from "./routes/user.routes.js";
 import chatRoutes from "./routes/chat.routes.js";
@@ -16,6 +17,7 @@ app.use(
 );
 app.use(express.json());
 app.use(cookies());
+app.use(morgan("dev"));
 
 app.use("/api/auth", userRoutes);
 app.use("/api/chat", chatRoutes);

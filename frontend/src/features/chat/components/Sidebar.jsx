@@ -54,9 +54,9 @@ const Sidebar = () => {
         ) : (
           chats.map((chat) => (
             <div
-              key={chat.id}
+              key={chat._id}
               className="p-4 hover:bg-gray-900/50 cursor-pointer mx-2 rounded-xl transition-all group border-l-4 border-transparent hover:border-cyan-400 hover:shadow-sm"
-              onClick={() => handleChatSelect(chat.id)}
+              onClick={() => handleChatSelect(chat._id)}
             >
               <div className="font-medium text-sm truncate text-gray-200 group-hover:text-white">
                 {chat.title}

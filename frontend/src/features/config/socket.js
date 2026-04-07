@@ -5,6 +5,23 @@ const SOCKET_SERVER_URL =
 
 console.log("[Socket] Connecting to:", SOCKET_SERVER_URL);
 
+/**
+ * Helper function to get token from cookies
+ * @param {string} name - Cookie name
+ * @returns {string|null} - Cookie value or null
+ */
+const getCookie = (name) => {
+  const nameEQ = name + "=";
+  const cookies = document.cookie.split(";");
+  for (let cookie of cookies) {
+    cookie = cookie.trim();
+    if (cookie.indexOf(nameEQ) === 0) {
+      return cookie.substring(nameEQ.length);
+    }
+  }
+  return null;
+};
+
 class SocketManager {
   constructor() {
     this.socket = null;
@@ -17,7 +34,7 @@ class SocketManager {
 
   /**
    * Initialize socket connection with authentication token
-   * @param {string} token - JWT authentication token
+   * @param {string} token - JWT authentication token (optional, will try cookies if not provided)
    * @returns {Promise<void>}
    */
   connect(token) {
@@ -28,9 +45,19 @@ class SocketManager {
       }
 
       try {
+        // Get token from parameter or cookies
+        const authToken =
+          getCookie("token") || localStorage.getItem("token") || token;
+
+        if (!authToken) {
+          console.error("[Socket] No authentication token found");
+          reject(new Error("No authentication token found"));
+          return;
+        }
+
         this.socket = io(SOCKET_SERVER_URL, {
           auth: {
-            token: `Bearer ${token}`,
+            token: `Bearer ${authToken}`,
           },
           reconnection: true,
           reconnectionDelay: this.reconnectDelay,
@@ -44,7 +71,17 @@ class SocketManager {
         this.socket.on("connect", () => {
           this.isConnected = true;
           this.reconnectAttempts = 0;
-          console.log("[Socket] Connected:", this.socket.id);
+
+          // Get socket ID with fallback (sometimes id takes a moment to be assigned)
+          const socketId =
+            this.socket?.id || this.socket?.connected ? "connected" : "unknown";
+          console.log("[Socket] Connected. ID:", socketId);
+          console.log("[Socket] Socket object:", {
+            connected: this.socket?.connected,
+            id: this.socket?.id,
+            hasId: !!this.socket?.id,
+          });
+
           resolve();
         });
 
@@ -109,6 +146,7 @@ class SocketManager {
     }
 
     this.socket.emit("send_message", { chatId, content }, (acknowledgment) => {
+      console.log(this.socket.id);
       if (!acknowledgment?.success) {
         console.error(
           `[Socket] Failed to send message: ${acknowledgment?.error}`,
@@ -201,6 +239,7 @@ class SocketManager {
       this.listeners.set(eventName, []);
       // Set up socket listener only once
       this.socket?.on(eventName, (data) => {
+        console.log(data);
         this.listeners.get(eventName).forEach((cb) => cb(data));
       });
     }
@@ -237,7 +276,8 @@ class SocketManager {
     this.socket.on("reconnect", () => {
       this.isConnected = true;
       this.reconnectAttempts = 0;
-      console.log("[Socket] Reconnected");
+      const socketId = this.socket?.id || "reconnected";
+      console.log("[Socket] Reconnected. ID:", socketId);
     });
 
     this.socket.on("reconnect_attempt", () => {
@@ -270,8 +310,18 @@ class SocketManager {
   getStatus() {
     return {
       isConnected: this.isConnected,
-      socketId: this.socket?.id || null,
+      socketId: this.socket?.id || "not_available",
+      socketConnected: this.socket?.connected || false,
     };
+  }
+
+  /**
+   * Get socket ID with fallback
+   */
+  getSocketId() {
+    return (
+      this.socket?.id || (this.socket?.connected ? "connected_no_id" : null)
+    );
   }
 }
 

@@ -25,13 +25,14 @@ export const loadChat = createAsyncThunk(
   "chat/loadChat",
   async (chatId, { rejectWithValue }) => {
     try {
-      // Mock messages
+      const chatResponse = await chatAPI.getChat(chatId);
+      const chatData = chatResponse.data || chatResponse;
+      const messages = chatData.message || [];
+      const chat = chatData.chat || {};
+      console.log("fromslic", messages);
       return {
         chatId,
-        messages: [
-          { id: "1", content: "Welcome to your chat!", sender: "bot" },
-          { id: "2", content: "AI ready to help!", sender: "bot" },
-        ],
+        messages: messages,
       };
     } catch (error) {
       return rejectWithValue(error.message);

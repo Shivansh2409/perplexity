@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router";
 import { useChat } from "../hooks/useChat";
-import { addMessage } from "../chat.slice";
 
 const ChatContent = () => {
   const { chatId } = useParams();
@@ -25,7 +24,6 @@ const ChatContent = () => {
     };
 
     // Add user message to Redux immediately for instant display
-    dispatch(addMessage(userMessage));
     setInputValue("");
     setSending(true);
 

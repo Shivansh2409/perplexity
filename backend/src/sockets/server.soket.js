@@ -79,7 +79,8 @@ export const initSocketServer = (httpServer) => {
           return;
         }
 
-        await handleUserMessage(socket, content);
+        // Pass io instance to socket service so it can broadcast to ALL clients
+        await handleUserMessage(socket, content, io);
         callback({ success: true });
       } catch (error) {
         callback({ success: false, error: error.message });

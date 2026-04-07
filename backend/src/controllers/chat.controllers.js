@@ -96,6 +96,7 @@ export async function getChat(req, res) {
       });
     }
     const messages = await messageModel.find({ chatroom: chatId });
+    console.log(messages);
     res.status(200).json({
       message: messages,
       chat: chat,

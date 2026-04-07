@@ -41,7 +41,7 @@ const ChatPage = () => {
   }
 
   return (
-    <div className="h-screen bg-[#0a0a0a] text-white flex flex-col">
+    <div className="h-screen bg-[#0a0a0a] text-white flex flex-col realative">
       {/* Header */}
       <div className="p-6 border-b border-gray-900 flex items-center gap-4">
         <button
@@ -59,7 +59,7 @@ const ChatPage = () => {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-8 py-6">
+      <div className="flex-1 overflow-y-auto px-8 py-6 ">
         {currentMessages.map((msg) => (
           <div
             key={msg.id}
@@ -83,7 +83,7 @@ const ChatPage = () => {
       </div>
 
       {/* Input Area */}
-      <div className="p-6 border-t border-gray-900">
+      <div className="p-6 border-t border-gray-900 flex">
         <div className="max-w-2xl mx-auto">
           <div className="flex gap-3">
             <textarea
