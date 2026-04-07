@@ -8,6 +8,7 @@ import {
   setChats,
   setLoading,
   setMessages,
+  setConnected,
 } from "../chat.slice";
 import { useAuth } from "../../auth/hooks/useAuth";
 
@@ -26,12 +27,30 @@ export const fetchChats = async (dispatch) => {
 
 export const useChat = (chatId) => {
   const dispatch = useDispatch();
-  const { token } = useAuth();
-  const { currentChat, chats } = useSelector((state) => state.chat);
+  const { currentChat, chats, connected } = useSelector((state) => state.chat);
   // const [messages, setMessages] = useState([]);
-  const [connected, setConnected] = useState(false);
+  // const [connected, setConnected] = useState(false);
   const [permissions, setPermissions] = useState("loading");
   const [localLoading, setLocalLoading] = useState(false);
+
+  /**
+   * Helper function to get token from cookies
+   * @param {string} name - Cookie name
+   * @returns {string|null} - Cookie value or null
+   */
+  const getCookie = (name) => {
+    const nameEQ = name + "=";
+    const cookies = document.cookie.split(";");
+    for (let cookie of cookies) {
+      cookie = cookie.trim();
+      if (cookie.indexOf(nameEQ) === 0) {
+        return cookie.substring(nameEQ.length);
+      }
+    }
+    return null;
+  };
+
+  const token = getCookie("token") || localStorage.getItem("token");
 
   // Socket connection with proper cleanup
   useEffect(() => {
@@ -43,7 +62,7 @@ export const useChat = (chatId) => {
         .connect(token)
         .then(() => {
           if (mounted) {
-            setConnected(true);
+            dispatch(setConnected(true));
             socketManager.joinChatRoom(chatId);
             cleanupSocket = true;
           }

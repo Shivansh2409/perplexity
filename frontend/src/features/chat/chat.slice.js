@@ -48,6 +48,7 @@ const chatSlice = createSlice({
     currentMessages: [],
     loading: false,
     error: null,
+    connected: false,
   },
   reducers: {
     addChat: (state, action) => {
@@ -71,6 +72,9 @@ const chatSlice = createSlice({
     },
     setLoading: (state, action) => {
       state.loading = action.payload;
+    },
+    setConnected: (state, action) => {
+      state.connected = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -113,6 +117,7 @@ export const {
   clearError,
   setChats,
   setLoading,
+  setConnected,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;
