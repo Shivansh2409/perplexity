@@ -35,47 +35,6 @@ export async function createChat(req, res) {
   }
 }
 
-export async function flowUpChat(req, res) {
-  try {
-    const { content } = req.body;
-    const userId = req.user.id;
-    const chatId = req.params.chatId;
-
-    const message = await messageModel.create({
-      chatroom: chatId,
-      owner: userId,
-      content: content,
-      sender: "user",
-    });
-
-    const messages = await messageModel.find({ chatroom: chatId });
-    const aiResponse = await generateResponse(messages);
-    await messageModel.create({
-      chatroom: chatId,
-      owner: userId,
-      content: aiResponse,
-      sender: "bot",
-    });
-
-    const embeddings = await generateEmbeddings(messages);
-    const chat = await chatModel.findById(chatId);
-    chat.embedding = embeddings;
-    await chat.save();
-
-    res.status(201).json({
-      message: "Chat updated successfully",
-      success: true,
-      aiResponse: aiResponse,
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({
-      message: "[flowUpChat route]:-Error updating chat",
-      success: false,
-    });
-  }
-}
-
 export async function getChat(req, res) {
   try {
     const chatId = req.params.chatId;

@@ -3,6 +3,7 @@ import { useChatAPI } from "../service/chat.api";
 import { useDispatch, useSelector } from "react-redux";
 import { setChats } from "../chat.slice";
 import { useNavigate } from "react-router";
+import { setFirstMessageContent, setFirstMessageSent } from "../chat.slice";
 
 const NewChatContent = () => {
   const api = useChatAPI();
@@ -16,11 +17,13 @@ const NewChatContent = () => {
       try {
         const result = await api.createChat(inputValue.trim());
         const newChat = {
-          id: result.chatId,
+          _id: result.chatId,
           title: result.title,
           updated: "Just now",
         };
         dispatch(setChats([newChat, ...chats]));
+        dispatch(setFirstMessageContent(inputValue.trim()));
+        dispatch(setFirstMessageSent(true));
         navigate(`/chat/${result.chatId}`);
         setInputValue("");
       } catch (err) {

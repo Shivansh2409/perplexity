@@ -49,6 +49,8 @@ const chatSlice = createSlice({
     loading: false,
     error: null,
     connected: false,
+    firstMessageSent: false,
+    firstMessageContent: "",
   },
   reducers: {
     addChat: (state, action) => {
@@ -75,6 +77,12 @@ const chatSlice = createSlice({
     },
     setConnected: (state, action) => {
       state.connected = action.payload;
+    },
+    setFirstMessageSent: (state, action) => {
+      state.firstMessageSent = action.payload;
+    },
+    setFirstMessageContent: (state, action) => {
+      state.firstMessageContent = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -118,6 +126,8 @@ export const {
   setChats,
   setLoading,
   setConnected,
+  setFirstMessageSent,
+  setFirstMessageContent,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

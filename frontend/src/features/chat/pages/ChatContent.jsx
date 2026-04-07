@@ -2,28 +2,49 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router";
 import { useChat } from "../hooks/useChat";
+import { setFirstMessageContent, setFirstMessageSent } from "../chat.slice";
 
 const ChatContent = () => {
   const { chatId } = useParams();
   const dispatch = useDispatch();
   const [inputValue, setInputValue] = useState("");
   const [sending, setSending] = useState(false);
-  const { currentMessages, currentChat, loading } = useSelector(
-    (state) => state.chat,
-  );
-  const { sendMessage, messages, connected, permissions } = useChat(chatId);
+  const {
+    currentMessages,
+    currentChat,
+    loading,
+    firstMessageSent,
+    firstMessageContent,
+  } = useSelector((state) => state.chat);
+  const { sendMessage, messages, permissions, connected } = useChat(chatId);
+
+  useEffect(() => {
+    const sendFirstMessage = async () => {
+      setSending(true);
+      console.log("useEffect");
+      if (firstMessageSent) {
+        try {
+          dispatch(setFirstMessageSent(false));
+          await sendMessage(firstMessageContent);
+          console.log("firstMessageSent:-", connected, firstMessageContent);
+          dispatch(setFirstMessageContent(""));
+        } catch (error) {
+          console.error("Send failed:", error);
+        } finally {
+          setSending(false);
+        }
+      }
+    };
+
+    // Only send when socket is connected AND first message is ready
+    if (connected && firstMessageSent) {
+      sendFirstMessage();
+    }
+  }, [connected, firstMessageSent, firstMessageContent, dispatch, sendMessage]);
 
   const handleSend = async () => {
     if (!inputValue.trim() || !connected || sending) return;
 
-    const userMessage = {
-      _id: Date.now().toString(),
-      content: inputValue,
-      sender: "user",
-      timestamp: new Date().toISOString(),
-    };
-
-    // Add user message to Redux immediately for instant display
     setInputValue("");
     setSending(true);
 

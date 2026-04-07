@@ -2,7 +2,6 @@ import express from "express";
 import { authenticateUser } from "../middleware/user.middleware.js";
 import {
   createChat,
-  flowUpChat,
   getChat,
   addReaction,
   removeReaction,
@@ -20,7 +19,6 @@ const chatRoute = express.Router();
 
 // Core chat routes
 chatRoute.post("/create-chat", authenticateUser, createChat);
-chatRoute.post("/flow-up-chat/:chatId", authenticateUser, flowUpChat);
 chatRoute.get("/get-chat/:chatId", authenticateUser, getChat);
 chatRoute.get("/all", authenticateUser, getAllChats);
 

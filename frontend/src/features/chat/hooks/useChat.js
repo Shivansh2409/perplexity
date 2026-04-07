@@ -62,8 +62,8 @@ export const useChat = (chatId) => {
         .connect(token)
         .then(() => {
           if (mounted) {
-            dispatch(setConnected(true));
             socketManager.joinChatRoom(chatId);
+            dispatch(setConnected(true));
             cleanupSocket = true;
           }
         })
@@ -142,12 +142,21 @@ export const useChat = (chatId) => {
 
   // Send message
   const sendMessage = async (content) => {
+    console.log("content", content);
     if (!chatId || !content.trim() || !connected) return;
-
+    console.log("content_1", content);
     try {
-      // const response = await chatAPI.flowUpChat(chatId, content);
+      // Add message optimistically to show immediately
+      // const optimisticMessage = {
+      //   _id: `temp-${Date.now()}`,
+      //   content: content.trim(),
+      //   sender: "user",
+      //   timestamp: new Date().toISOString(),
+      // };
+      // dispatch(addMessage(optimisticMessage));
+
+      // Send via socket (don't wait for response)
       socketManager.sendMessage(chatId, content);
-      // return response;
     } catch (error) {
       console.error("Send message failed:", error);
       throw error;
