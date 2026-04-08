@@ -78,7 +78,7 @@ export const MessageActionsMenu = ({
   };
 
   return (
-    <div className="message-actions-menu">
+    <div className="message-actions-menu block ">
       {/* Menu trigger button */}
       <button
         className="menu-trigger"

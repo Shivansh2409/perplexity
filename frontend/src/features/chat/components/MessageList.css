@@ -8,7 +8,7 @@
 .banner-container {
   flex-shrink: 0;
   padding-top: 0;
-  border-bottom: 1px solid #e5e5e5;
+  border-bottom: 1px solid #1a1a1a;
 }
 
 .messages-container {
@@ -19,7 +19,8 @@
   flex-direction: column;
   gap: 8px;
   scrollbar-width: thin;
-  scrollbar-color: #d0d0d0 transparent;
+  scrollbar-color: #3a3a3a transparent;
+  background-color: #0a0a0a;
 }
 
 .messages-container::-webkit-scrollbar {
@@ -31,37 +32,38 @@
 }
 
 .messages-container::-webkit-scrollbar-thumb {
-  background-color: #d0d0d0;
+  background-color: #3a3a3a;
   border-radius: 3px;
 }
 
 .messages-container::-webkit-scrollbar-thumb:hover {
-  background-color: #999999;
+  background-color: #555555;
 }
 
 .message-list-footer {
   display: flex;
   justify-content: center;
   padding: 12px;
-  border-top: 1px solid #e5e5e5;
-  background: #fafafa;
+  border-top: 1px solid #1a1a1a;
+  background-color: #0a0a0a;
 }
 
 .saved-messages-btn {
   padding: 8px 16px;
-  background: #fff;
-  border: 1px solid #e5e5e5;
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
   border-radius: 4px;
   font-size: 13px;
   cursor: pointer;
   transition: all 0.2s ease;
   font-weight: 500;
+  color: #e5e5e5;
 }
 
 .saved-messages-btn:hover {
-  background: #f5f5f5;
-  border-color: #d0d0d0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  background: #252525;
+  border-color: #06b6d4;
+  box-shadow: 0 2px 4px rgba(6, 182, 212, 0.1);
 }
 
 .saved-messages-btn:active {
@@ -74,25 +76,20 @@
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: #a0a0a0;
+  color: #666666;
 }
 
 .empty-state-text {
   margin: 0 0 8px 0;
   font-size: 16px;
   font-weight: 500;
+  color: #888888;
 }
 
 .empty-state-subtext {
   margin: 0;
   font-size: 14px;
-  color: #c0c0c0;
-}
-
-.empty-state-subtext {
-  margin: 0;
-  font-size: 13px;
-  color: #c0c0c0;
+  color: #666666;
 }
 
 @media (max-width: 768px) {

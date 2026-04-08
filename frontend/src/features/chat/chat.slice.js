@@ -54,6 +54,10 @@ const chatSlice = createSlice({
     ai_chunk: "",
     ai_status: "",
     ai_complete: "",
+    // UI state for panels
+    showSavedMessages: false,
+    showParticipants: false,
+    accessRequests: [],
   },
   reducers: {
     addChat: (state, action) => {
@@ -95,6 +99,29 @@ const chatSlice = createSlice({
     },
     setAIComplete: (state, action) => {
       state.ai_complete = action.payload;
+    },
+    toggleSavedMessages: (state) => {
+      state.showSavedMessages = !state.showSavedMessages;
+    },
+    setSavedMessages: (state, action) => {
+      state.showSavedMessages = action.payload;
+    },
+    toggleParticipants: (state) => {
+      state.showParticipants = !state.showParticipants;
+    },
+    setParticipants: (state, action) => {
+      state.showParticipants = action.payload;
+    },
+    setAccessRequests: (state, action) => {
+      state.accessRequests = action.payload;
+    },
+    addAccessRequest: (state, action) => {
+      state.accessRequests.push(action.payload);
+    },
+    removeAccessRequest: (state, action) => {
+      state.accessRequests = state.accessRequests.filter(
+        (req) => req._id !== action.payload,
+      );
     },
   },
   extraReducers: (builder) => {
@@ -143,6 +170,13 @@ export const {
   setAIChunk,
   setAIStatus,
   setAIComplete,
+  toggleSavedMessages,
+  setSavedMessages,
+  toggleParticipants,
+  setParticipants,
+  setAccessRequests,
+  addAccessRequest,
+  removeAccessRequest,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

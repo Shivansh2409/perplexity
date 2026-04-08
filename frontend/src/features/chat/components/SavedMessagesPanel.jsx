@@ -100,3 +100,5 @@ export const SavedMessagesPanel = ({ isOpen, onClose, token }) => {
     </div>
   );
 };
+
+export default SavedMessagesPanel;

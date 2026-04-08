@@ -1,7 +1,8 @@
 .message-input-container {
   padding: 16px 20px;
-  background-color: #ffffff;
-  border-top: 1px solid #e5e5e5;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.3), transparent);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid #1a1a1a;
 }
 
 .message-input-form {
@@ -19,7 +20,7 @@
 .message-input {
   flex: 1;
   padding: 12px 16px;
-  border: 1px solid #e5e5e5;
+  border: 1px solid #2a2a2a;
   border-radius: 8px;
   font-size: 14px;
   font-family:
@@ -30,25 +31,25 @@
   transition:
     border-color 0.2s,
     box-shadow 0.2s;
-  background-color: #ffffff;
-  color: #1a1a1a;
+  background-color: #1a1a1a;
+  color: #e5e5e5;
 }
 
 .message-input:focus {
   outline: none;
-  border-color: #000000;
-  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+  border-color: #06b6d4;
+  box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.1);
 }
 
 .message-input:disabled {
-  background-color: #f5f5f5;
-  color: #999999;
-  border-color: #e0e0e0;
+  background-color: #0f0f0f;
+  color: #666666;
+  border-color: #1a1a1a;
   cursor: not-allowed;
 }
 
 .message-input::placeholder {
-  color: #b0b0b0;
+  color: #666666;
 }
 
 .send-button {
@@ -58,19 +59,20 @@
   width: 40px;
   height: 40px;
   padding: 0;
-  background-color: #000000;
+  background: linear-gradient(to right, #06b6d4, #0ea5e9);
   color: #ffffff;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   transition:
     background-color 0.2s,
-    transform 0.1s;
+    transform 0.1s,
+    filter 0.2s;
   flex-shrink: 0;
 }
 
 .send-button:hover:not(:disabled) {
-  background-color: #333333;
+  filter: brightness(1.1);
   transform: scale(1.05);
 }
 
@@ -79,8 +81,8 @@
 }
 
 .send-button:disabled {
-  background-color: #e0e0e0;
-  color: #b0b0b0;
+  background: linear-gradient(to right, #4b5563, #5a636e);
+  color: #888888;
   cursor: not-allowed;
 }
 

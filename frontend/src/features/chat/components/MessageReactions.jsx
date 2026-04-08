@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 // import { messageApi } from "../service/chat.api";
 
-const EMOJI_OPTIONS = ["👍", "❤️", "😂", "😮", "😢", "🎉", "🔥", "✨"];
+const EMOJI_OPTIONS = [" 👍 ", " ❤️ ", " 😂 ", " 😮", "😢", "🎉", "🔥", "✨"];
 
 export const MessageReactions = ({
   messageId,

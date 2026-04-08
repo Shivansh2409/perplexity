@@ -49,7 +49,7 @@ export const Message = ({
 
   return (
     <div
-      className={`message ${isCurrentUser ? "user-message" : "bot-message"} ${
+      className={`message flex ${isCurrentUser ? "user-message" : "bot-message"} ${
         isPinned ? "pinned-message" : ""
       }`}
       onMouseEnter={() => setShowActions(true)}
@@ -78,49 +78,44 @@ export const Message = ({
           )}
           {isSavedByUser && <span className="saved-indicator">💾 Saved</span>}
         </div>
-      </div>
+        <div className="message-actions-section">
+          {/* Reactions */}
+          {Object.keys(reactions).length > 0 && (
+            <div className="message-reactions-container">
+              <MessageReactions
+                messageId={_id}
+                reactions={reactions}
+                token={token}
+                onReactionUpdate={handleReactionUpdate}
+              />
+            </div>
+          )}
 
-      <div className="message-actions-section">
-        {/* Reactions */}
-        {Object.keys(reactions).length > 0 && (
-          <div className="message-reactions-container">
-            <MessageReactions
-              messageId={_id}
-              reactions={reactions}
-              token={token}
-              onReactionUpdate={handleReactionUpdate}
-            />
-          </div>
-        )}
-
-        {/* Actions Menu */}
-        {showActions && (
-          <MessageActionsMenu
-            messageId={_id}
-            messageContent={content}
-            isPinned={isPinned}
-            isSaved={isSavedByUser}
-            isOwner={isMessageOwner}
-            isChatOwner={isChatOwner}
-            token={token}
-            onPin={() => onReactionUpdate && onReactionUpdate()}
-            onSave={() => onReactionUpdate && onReactionUpdate()}
-            onEdit={onEdit}
-            onDelete={onDelete}
-          />
-        )}
-
-        {/* Add reaction button always visible on hover */}
-        {showActions && (
-          <div className="quick-reaction">
-            <MessageReactions
-              messageId={_id}
-              reactions={{}}
-              token={token}
-              onReactionUpdate={handleReactionUpdate}
-            />
-          </div>
-        )}
+          {/* Actions Menu */}
+          {showActions && (
+            <div className="flex items-center gap-2">
+              <MessageActionsMenu
+                messageId={_id}
+                messageContent={content}
+                isPinned={isPinned}
+                isSaved={isSavedByUser}
+                isOwner={isMessageOwner}
+                isChatOwner={isChatOwner}
+                token={token}
+                onPin={() => onReactionUpdate && onReactionUpdate()}
+                onSave={() => onReactionUpdate && onReactionUpdate()}
+                onEdit={onEdit}
+                onDelete={onDelete}
+              />
+              <MessageReactions
+                messageId={_id}
+                reactions={{}}
+                token={token}
+                onReactionUpdate={handleReactionUpdate}
+              />
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="message-sender-badge">

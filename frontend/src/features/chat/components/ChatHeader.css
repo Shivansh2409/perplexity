@@ -1,7 +1,7 @@
 .chat-header {
   padding: 16px 20px;
-  background-color: #ffffff;
-  border-bottom: 1px solid #e5e5e5;
+  background-color: #0a0a0a;
+  border-bottom: 1px solid #1a1a1a;
 }
 
 .chat-header-content {
@@ -20,7 +20,7 @@
   margin: 0;
   font-size: 20px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: #ffffff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -29,7 +29,7 @@
 .chat-meta {
   margin: 6px 0 0 0;
   font-size: 12px;
-  color: #999999;
+  color: #888888;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -38,6 +38,7 @@
 .owner-indicator {
   display: inline-flex;
   margin-left: 4px;
+  color: #06b6d4;
 }
 
 .typing-indicator {
@@ -45,13 +46,13 @@
   align-items: center;
   gap: 6px;
   padding: 8px 12px;
-  background-color: #f9f9f9;
+  background-color: #1a1a1a;
   border-radius: 6px;
 }
 
 .typing-text {
   font-size: 13px;
-  color: #666666;
+  color: #a0a0a0;
   font-style: italic;
 }
 
@@ -65,7 +66,7 @@
   display: inline-block;
   width: 4px;
   height: 4px;
-  background-color: #999999;
+  background-color: #06b6d4;
   border-radius: 50%;
   animation: typingAnimation 1.4s infinite;
 }
@@ -94,10 +95,43 @@
 .permission-indicator {
   display: flex;
   align-items: center;
+  gap: 8px;
   flex-shrink: 0;
 }
 
 .permission-badge {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid;
+}
+
+.permission-badge.edit {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.permission-badge.view-only {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.permission-badge.no-access {
+  background-color: rgba(107, 114, 128, 0.1);
+  color: #9ca3af;
+  border-color: rgba(107, 114, 128, 0.3);
+}
+
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #888888;
+  font-size: 13px;
+
   display: inline-flex;
   align-items: center;
   padding: 6px 12px;

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import Message from "./Message";
 import { PinnedMessageBanner } from "./PinnedMessageBanner";
 import { SavedMessagesPanel } from "./SavedMessagesPanel";

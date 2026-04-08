@@ -12,6 +12,7 @@ export const ChatHeader = ({
   participantCount = 0,
   isOwner = false,
   permission = "no-access",
+  connected = false,
 }) => {
   const getTypingText = () => {
     const names = Object.values(typingUsers);
@@ -52,6 +53,12 @@ export const ChatHeader = ({
               : permission === "view-only"
                 ? "View Only"
                 : "Edit Access"}
+          </span>
+        </div>
+
+        <div className="connection-status">
+          <span className="text-sm text-gray-500 ml-auto">
+            {connected ? "● Live" : "● Offline"}
           </span>
         </div>
       </div>
