@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router";
 import { useChat } from "../hooks/useChat";
 import { setFirstMessageContent, setFirstMessageSent } from "../chat.slice";
+import ReactMarkdown from "react-markdown";
 
 const ChatContent = () => {
   const { chatId } = useParams();
@@ -104,7 +105,13 @@ const ChatContent = () => {
                   : "bg-gradient-to-r from-cyan-500/90 to-blue-600/90 rounded-bl-sm shadow-lg"
               }`}
             >
-              <p className="text-sm leading-relaxed">{msg.content}</p>
+              <p className="text-sm leading-relaxed">
+                {msg.sender === "bot" ? (
+                  <ReactMarkdown>{msg.content}</ReactMarkdown>
+                ) : (
+                  msg.content
+                )}
+              </p>
               <div className="flex items-center gap-2 mt-2 opacity-75">
                 <span className="text-xs">
                   {msg.timestamp

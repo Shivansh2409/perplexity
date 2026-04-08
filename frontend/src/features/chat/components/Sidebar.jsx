@@ -5,6 +5,7 @@ import { createChat } from "../chat.slice";
 import { useNavigate } from "react-router";
 import { useEffect } from "react";
 import { fetchChats } from "../hooks/useChat";
+import ReactMarkdown from "react-markdown";
 
 const Sidebar = () => {
   const dispatch = useDispatch();
@@ -59,7 +60,7 @@ const Sidebar = () => {
               onClick={() => handleChatSelect(chat._id)}
             >
               <div className="font-medium text-sm truncate text-gray-200 group-hover:text-white">
-                {chat.title}
+                <ReactMarkdown>{chat.title}</ReactMarkdown>
               </div>
               <div className="text-xs text-gray-500 mt-1 group-hover:text-gray-400">
                 {chat.updated || "Just now"}
