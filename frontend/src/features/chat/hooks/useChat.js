@@ -9,6 +9,9 @@ import {
   setLoading,
   setMessages,
   setConnected,
+  setAIChunk,
+  setAIStatus,
+  setAIComplete,
 } from "../chat.slice";
 import { useAuth } from "../../auth/hooks/useAuth";
 
@@ -130,7 +133,15 @@ export const useChat = (chatId) => {
       const newChat = { id: chatId, title, updated: "Just now" };
       dispatch(setChats([newChat, ...chats]));
     };
-
+    socketManager.onAIChunk((chunk) => {
+      dispatch(setAIChunk(chunk));
+    });
+    socketManager.onAIStatus((status) => {
+      dispatch(setAIStatus(status));
+    });
+    socketManager.onAIComplete((message) => {
+      dispatch(setAIComplete(message));
+    });
     socketManager.onMessageReceived(handleNewMessage);
     socketManager.onAccessGranted(handleAccessGranted);
 

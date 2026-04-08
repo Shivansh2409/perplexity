@@ -23,8 +23,13 @@ export async function handleUserMessage(socket, content, io) {
     console.log("[Socket] User message emitted to room:", chatId);
 
     // Get all messages and generate AI response
+    io.to(chatId).emit("ai-status", { status: "typing" });
+
     const messages = await messageModel.find({ chatroom: chatId });
-    const aiResponse = await generateResponse(messages);
+    const aiResponse = await generateResponse(messages, (chunk) => {
+      // Send every small piece of text to the frontend room
+      io.to(chatId).emit("ai-chunk", { chunk });
+    });
 
     const aiMessage = await messageModel.create({
       chatroom: socket.chat._id,
@@ -46,6 +51,8 @@ export async function handleUserMessage(socket, content, io) {
     cleanAiMessage._id = cleanAiMessage._id.toString();
     io.to(chatId).emit("message", cleanAiMessage);
     console.log("[Socket] AI message emitted to room:", chatId);
+
+    io.to(chatId).emit("ai-status", { status: "complete" });
   } catch (err) {
     console.error("[Socket] Error handling message:", err);
   }

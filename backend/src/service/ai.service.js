@@ -24,8 +24,8 @@ const google_embeddings = new GoogleGenerativeAIEmbeddings({
   model: "gemini-embedding-2-preview",
 });
 
-export async function generateResponse(message) {
-  const response = await google_model.invoke([
+export async function generateResponse(message, onChunk) {
+  const response = await google_model.stream([
     new SystemMessage(`
             You are a helpful assistant that provides concise and relevant responses to user queries. 
             Your goal is to understand the user's question and provide accurate and informative answers in a clear and concise manner.
@@ -40,6 +40,18 @@ export async function generateResponse(message) {
         })
       : [new HumanMessage(message)]),
   ]);
+
+  let fullContent = "";
+
+  for await (const chunk of response) {
+    const content = chunk.content; // Extract text from chunk
+    fullContent += content;
+
+    // Call the callback to send this chunk to the socket
+    if (onChunk) onChunk(content);
+  }
+
+  response.content = fullContent;
   return response.content;
 }
 

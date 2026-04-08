@@ -8,6 +8,7 @@ import ReactMarkdown from "react-markdown";
 const ChatContent = () => {
   const { chatId } = useParams();
   const dispatch = useDispatch();
+  const [chunk, setChunk] = useState("");
   const [inputValue, setInputValue] = useState("");
   const [sending, setSending] = useState(false);
   const {
@@ -16,9 +17,13 @@ const ChatContent = () => {
     loading,
     firstMessageSent,
     firstMessageContent,
+    ai_chunk,
+    ai_status,
+    ai_complete,
   } = useSelector((state) => state.chat);
   const { sendMessage, messages, permissions, connected } = useChat(chatId);
 
+  //for first message persistence across chat switches
   useEffect(() => {
     const sendFirstMessage = async () => {
       setSending(true);
@@ -107,8 +112,19 @@ const ChatContent = () => {
             >
               <p className="text-sm leading-relaxed">
                 {msg.sender === "bot" ? (
-                  <ReactMarkdown>{msg.content}</ReactMarkdown>
+                  ai_status.status === "typing" ? (
+                    <>
+                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      <span className="animate-pulse">▌</span>
+                      <span className="animate-pulse">▌</span>
+                      <span className="animate-pulse">▌</span>
+                    </>
+                  ) : (
+                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                  )
                 ) : (
+                  // {ai_status.status}
+
                   msg.content
                 )}
               </p>

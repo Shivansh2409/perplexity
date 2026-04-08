@@ -21,24 +21,24 @@ export const createChat = createAsyncThunk(
   },
 );
 
-export const loadChat = createAsyncThunk(
-  "chat/loadChat",
-  async (chatId, { rejectWithValue }) => {
-    try {
-      const chatResponse = await chatAPI.getChat(chatId);
-      const chatData = chatResponse.data || chatResponse;
-      const messages = chatData.message || [];
-      const chat = chatData.chat || {};
-      console.log("fromslic", messages);
-      return {
-        chatId,
-        messages: messages,
-      };
-    } catch (error) {
-      return rejectWithValue(error.message);
-    }
-  },
-);
+// export const loadChat = createAsyncThunk(
+//   "chat/loadChat",
+//   async (chatId, { rejectWithValue }) => {
+//     try {
+//       const chatResponse = await chatAPI.getChat(chatId);
+//       const chatData = chatResponse.data || chatResponse;
+//       const messages = chatData.message || [];
+//       const chat = chatData.chat || {};
+//       console.log("fromslic", messages);
+//       return {
+//         chatId,
+//         messages: messages,
+//       };
+//     } catch (error) {
+//       return rejectWithValue(error.message);
+//     }
+//   },
+// );
 
 const chatSlice = createSlice({
   name: "chat",
@@ -51,6 +51,9 @@ const chatSlice = createSlice({
     connected: false,
     firstMessageSent: false,
     firstMessageContent: "",
+    ai_chunk: "",
+    ai_status: "",
+    ai_complete: "",
   },
   reducers: {
     addChat: (state, action) => {
@@ -84,6 +87,15 @@ const chatSlice = createSlice({
     setFirstMessageContent: (state, action) => {
       state.firstMessageContent = action.payload;
     },
+    setAIChunk: (state, action) => {
+      state.ai_chunk = action.payload;
+    },
+    setAIStatus: (state, action) => {
+      state.ai_status = action.payload;
+    },
+    setAIComplete: (state, action) => {
+      state.ai_complete = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -100,20 +112,20 @@ const chatSlice = createSlice({
       .addCase(createChat.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-      })
-      // Load Chat
-      .addCase(loadChat.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(loadChat.fulfilled, (state, action) => {
-        state.loading = false;
-        state.currentChat = action.payload;
-        state.currentMessages = action.payload.messages;
-      })
-      .addCase(loadChat.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
       });
+    // Load Chat
+    // .addCase(loadChat.pending, (state) => {
+    //   state.loading = true;
+    // })
+    // .addCase(loadChat.fulfilled, (state, action) => {
+    //   state.loading = false;
+    //   state.currentChat = action.payload;
+    //   state.currentMessages = action.payload.messages;
+    // })
+    // .addCase(loadChat.rejected, (state, action) => {
+    //   state.loading = false;
+    //   state.error = action.payload;
+    // });
   },
 });
 
@@ -128,6 +140,9 @@ export const {
   setConnected,
   setFirstMessageSent,
   setFirstMessageContent,
+  setAIChunk,
+  setAIStatus,
+  setAIComplete,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

@@ -177,6 +177,30 @@ class SocketManager {
   }
 
   /**
+   * Listen for AI response completion
+   * @param {Function} callback - Callback function with AI message data
+   */
+  onAIComplete(callback) {
+    this.addListener("ai-complete", callback);
+  }
+
+  /**
+   * Listen for AI response chunks (for streaming)
+   * @param {Function} callback - Callback function with AI chunk data
+   */
+  onAIChunk(callback) {
+    this.addListener("ai-chunk", callback);
+  }
+
+  /**
+   * Listen for AI status updates (e.g., typing)
+   * @param {Function} callback - Callback function with status data
+   */
+  onAIStatus(callback) {
+    this.addListener("ai-status", callback);
+  }
+
+  /**
    * Listen for access requests
    * @param {Function} callback - Callback function with access request data
    */
