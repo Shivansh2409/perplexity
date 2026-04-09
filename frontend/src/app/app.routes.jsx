@@ -7,8 +7,8 @@ import Protect from "../features/auth/component/Protect";
 import ChatLayout from "../features/chat/pages/ChatLayout";
 import NewChatContent from "../features/chat/pages/NewChatContent";
 import ChatContent from "../features/chat/pages/ChatContent";
+
 export const router = createBrowserRouter([
-  // Legacy CreateChat route removed
   {
     path: "/",
     element: (

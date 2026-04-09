@@ -13,6 +13,7 @@ import "./MessageList.css";
 export const MessageList = ({ messages, chatId }) => {
   const { user, token } = useSelector((state) => state.auth);
   const { isOwner } = useSelector((state) => state.chat);
+  const theme = useSelector((state) => state.theme.mode);
   const dispatch = useDispatch();
   const messagesEndRef = useRef(null);
   const [showSavedPanel, setShowSavedPanel] = useState(false);
@@ -41,7 +42,9 @@ export const MessageList = ({ messages, chatId }) => {
 
   return (
     <>
-      <div className="message-list">
+      <div
+        className={`message-list ${theme === "dark" ? "dark-theme" : "light-theme"}`}
+      >
         {/* Pinned Messages Banner */}
         {chatId && (
           <div className="banner-container">
@@ -66,7 +69,9 @@ export const MessageList = ({ messages, chatId }) => {
               />
             ))
           ) : (
-            <div className="empty-state">
+            <div
+              className={`empty-state ${theme === "dark" ? "dark-theme" : "light-theme"}`}
+            >
               <p className="empty-state-text">Start a conversation</p>
               <p className="empty-state-subtext">Send a message to begin</p>
             </div>
@@ -77,7 +82,7 @@ export const MessageList = ({ messages, chatId }) => {
         {/* Saved Messages Button */}
         <div className="message-list-footer">
           <button
-            className="saved-messages-btn"
+            className={`saved-messages-btn ${theme === "dark" ? "dark-theme" : "light-theme"}`}
             onClick={() => setShowSavedPanel(true)}
             title="View saved messages"
           >

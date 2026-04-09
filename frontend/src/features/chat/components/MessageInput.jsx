@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useSelector } from "react-redux";
 import "./MessageInput.css";
 
 /**
@@ -14,6 +15,7 @@ export const MessageInput = ({
 }) => {
   const [message, setMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const theme = useSelector((state) => state.theme.mode);
   const typingTimeoutRef = useRef(null);
   const isDisabled = permission === "no-access" || permission === "view-only";
 
@@ -53,7 +55,9 @@ export const MessageInput = ({
   }, []);
 
   return (
-    <div className="message-input-container">
+    <div
+      className={`message-input-container ${theme === "dark" ? "dark-theme" : "light-theme"}`}
+    >
       <form onSubmit={handleSendMessage} className="message-input-form">
         <div className="input-wrapper">
           <textarea

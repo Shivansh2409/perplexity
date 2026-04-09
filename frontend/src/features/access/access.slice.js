@@ -1,0 +1,170 @@
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+
+const { chatAPI } = await import("../chat/service/chat.api");
+
+// Async Thunks
+export const fetchPendingRequests = createAsyncThunk(
+  "access/fetchPendingRequests",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await chatAPI.getPendingRequests();
+      return response.data?.requests || [];
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  },
+);
+
+export const submitAccessRequest = createAsyncThunk(
+  "access/submitAccessRequest",
+  async (chatId, { rejectWithValue }) => {
+    try {
+      const response = await chatAPI.requestAccess(chatId);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message);
+    }
+  },
+);
+
+export const approveAccessRequest = createAsyncThunk(
+  "access/approveAccessRequest",
+  async (requestId, { rejectWithValue }) => {
+    try {
+      const response = await chatAPI.updateRequestStatus(requestId, "approved");
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  },
+);
+
+export const rejectAccessRequest = createAsyncThunk(
+  "access/rejectAccessRequest",
+  async (requestId, { rejectWithValue }) => {
+    try {
+      const response = await chatAPI.updateRequestStatus(requestId, "rejected");
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  },
+);
+
+const accessSlice = createSlice({
+  name: "access",
+  initialState: {
+    pendingRequests: [],
+    loading: false,
+    error: null,
+    requestSent: false,
+    notifications: [],
+  },
+  reducers: {
+    addNotification(state, action) {
+      state.notifications.push(action.payload);
+    },
+    removeNotification(state, action) {
+      state.notifications = state.notifications.filter(
+        (n) => n.id !== action.payload,
+      );
+    },
+    clearError(state) {
+      state.error = null;
+    },
+    addPendingRequest(state, action) {
+      state.pendingRequests.push(action.payload);
+    },
+    removePendingRequest(state, action) {
+      state.pendingRequests = state.pendingRequests.filter(
+        (r) => r._id !== action.payload,
+      );
+    },
+  },
+  extraReducers: (builder) => {
+    // Fetch Pending Requests
+    builder
+      .addCase(fetchPendingRequests.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchPendingRequests.fulfilled, (state, action) => {
+        state.loading = false;
+        state.pendingRequests = action.payload;
+      })
+      .addCase(fetchPendingRequests.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+
+    // Submit Access Request
+    builder
+      .addCase(submitAccessRequest.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(submitAccessRequest.fulfilled, (state, action) => {
+        state.loading = false;
+        state.requestSent = true;
+        state.notifications.push({
+          id: Date.now(),
+          message: "Access request sent successfully",
+          type: "success",
+        });
+      })
+      .addCase(submitAccessRequest.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.notifications.push({
+          id: Date.now(),
+          message: action.payload || "Failed to send access request",
+          type: "error",
+        });
+      });
+
+    // Approve Request
+    builder
+      .addCase(approveAccessRequest.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(approveAccessRequest.fulfilled, (state, action) => {
+        state.loading = false;
+        state.notifications.push({
+          id: Date.now(),
+          message: "Access request approved",
+          type: "success",
+        });
+      })
+      .addCase(approveAccessRequest.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+
+    // Reject Request
+    builder
+      .addCase(rejectAccessRequest.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(rejectAccessRequest.fulfilled, (state, action) => {
+        state.loading = false;
+        state.notifications.push({
+          id: Date.now(),
+          message: "Access request rejected",
+          type: "success",
+        });
+      })
+      .addCase(rejectAccessRequest.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+  },
+});
+
+export const {
+  addNotification,
+  removeNotification,
+  clearError,
+  addPendingRequest,
+  removePendingRequest,
+} = accessSlice.actions;
+export default accessSlice.reducer;

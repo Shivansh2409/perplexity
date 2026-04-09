@@ -1,33 +1,29 @@
-import React, { useState, useEffect } from "react";
-// import { messageApi } from "../service/chat.api";
+import React, { useState, useEffect, useCallback } from "react";
+import useMessages from "../hooks/useMessages";
 import "./PinnedMessageBanner.css";
 
-export const PinnedMessageBanner = ({ chatId, token, isChatOwner }) => {
+export const PinnedMessageBanner = ({ chatId, isChatOwner, onUnpin }) => {
+  const { getPinnedMessages } = useMessages();
   const [pinnedMessages, setPinnedMessages] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(false);
 
+  const fetchPinnedMessages = useCallback(async () => {
+    if (!chatId) return;
+    try {
+      setLoading(true);
+      const data = await getPinnedMessages(chatId);
+      setPinnedMessages(data.pinnedMessages || data.message || []);
+    } catch (error) {
+      console.error("Pinned messages fetch failed:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [chatId, getPinnedMessages]);
+
   useEffect(() => {
-    const fetchPinnedMessages = async () => {
-      if (!chatId || !token) return;
-
-      try {
-        setLoading(true);
-        const data = await messageApi.getPinnedMessages(chatId, token);
-        setPinnedMessages(data.pinnedMessages || []);
-      } catch (error) {
-        console.error("Failed to fetch pinned messages:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchPinnedMessages();
-  }, [chatId, token]);
-
-  if (loading || pinnedMessages.length === 0) {
-    return null;
-  }
+  }, [fetchPinnedMessages]);
 
   const currentMessage = pinnedMessages[currentIndex];
 
@@ -43,64 +39,118 @@ export const PinnedMessageBanner = ({ chatId, token, isChatOwner }) => {
     );
   };
 
-  const handleUnpin = async () => {
+  const handleUnpinCurrent = async () => {
+    if (!currentMessage || !isChatOwner) return;
+
     try {
-      await messageApi.unpinMessage(currentMessage._id, token);
+      setLoading(true);
+      // Call unpin via messages hook
+      await fetch(`/api/chat/message/${currentMessage._id}/unpin`, {
+        method: "PUT",
+        credentials: "include",
+      });
+
+      // Update local state
       const updated = pinnedMessages.filter(
         (m) => m._id !== currentMessage._id,
       );
       setPinnedMessages(updated);
-      if (currentIndex >= updated.length && currentIndex > 0) {
+
+      if (updated.length === 0) {
+        onUnpin && onUnpin();
+      } else if (currentIndex >= updated.length && currentIndex > 0) {
         setCurrentIndex(currentIndex - 1);
       }
     } catch (error) {
-      console.error("Failed to unpin message:", error);
+      console.error("Unpin failed:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
+  if (loading || pinnedMessages.length === 0) return null;
+
   return (
-    <div className="pinned-message-banner">
-      <div className="pinned-header">
-        <span className="pin-icon">📌 Pinned</span>
-        <span className="pin-count">
-          {currentIndex + 1} / {pinnedMessages.length}
-        </span>
-      </div>
-
-      <div className="pinned-content">
-        <button
-          className="nav-btn prev-btn"
-          onClick={handlePrevious}
-          disabled={pinnedMessages.length <= 1}
-        >
-          ‹
-        </button>
-
-        <div className="message-preview">
-          <p className="preview-text">{currentMessage.content}</p>
-          {currentMessage.isEdited && (
-            <span className="edited-label">(edited)</span>
-          )}
+    <div className="pinned-message-banner fixed top-20 left-80 right-0 z-40 bg-gradient-to-r from-gray-900/95 to-gray-950/95 border-b border-gray-800/50 backdrop-blur-xl shadow-2xl">
+      <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+        {/* Left: Pin indicator */}
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 border-2 border-blue-500/30 rounded-xl flex items-center justify-center shadow-lg backdrop-blur-sm">
+            <span className="text-lg font-bold text-blue-400">📌</span>
+          </div>
+          <div>
+            <div className="flex items-center gap-2 text-sm font-medium text-gray-300 mb-1">
+              <span>Pinned message</span>
+              <span className="px-2 py-0.5 bg-blue-500/20 text-blue-400 text-xs rounded-full border border-blue-500/30 font-mono">
+                {currentIndex + 1} / {pinnedMessages.length}
+              </span>
+            </div>
+            <p className="text-sm max-w-md line-clamp-2 leading-tight text-gray-200">
+              {currentMessage?.content}
+            </p>
+          </div>
         </div>
 
-        <button
-          className="nav-btn next-btn"
-          onClick={handleNext}
-          disabled={pinnedMessages.length <= 1}
-        >
-          ›
-        </button>
-      </div>
+        {/* Navigation */}
+        <div className="flex items-center gap-2">
+          <button
+            className="nav-btn p-2 hover:bg-white/10 rounded-xl transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={handlePrevious}
+            disabled={pinnedMessages.length <= 1 || loading}
+            title="Previous pinned"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </button>
 
-      {isChatOwner && (
-        <button
-          className="unpin-btn"
-          onClick={handleUnpin}
-          title="Unpin this message"
-        >
-          ✕
-        </button>
-      )}
+          <button
+            className="nav-btn p-2 hover:bg-white/10 rounded-xl transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={handleNext}
+            disabled={pinnedMessages.length <= 1 || loading}
+            title="Next pinned"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </button>
+
+          {isChatOwner && (
+            <button
+              className="unpin-btn ml-4 p-2.5 hover:bg-red-500/20 hover:border-red-500/50 border border-transparent rounded-xl text-red-400 hover:text-red-300 shadow-sm hover:shadow-md transition-all flex items-center gap-1.5 text-sm font-medium backdrop-blur-sm"
+              onClick={handleUnpinCurrent}
+              disabled={loading}
+              title="Unpin current message"
+            >
+              {loading ? (
+                <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <>✕ Unpin</>
+              )}
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

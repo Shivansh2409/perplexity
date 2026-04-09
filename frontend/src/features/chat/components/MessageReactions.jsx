@@ -1,84 +1,76 @@
 import React, { useState } from "react";
-// import { messageApi } from "../service/chat.api";
+import useMessages from "../hooks/useMessages";
 
-const EMOJI_OPTIONS = [" 👍 ", " ❤️ ", " 😂 ", " 😮", "😢", "🎉", "🔥", "✨"];
+const EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🎉", "🔥", "✨", "🙌", "👏"];
 
 export const MessageReactions = ({
   messageId,
   reactions = {},
-  token,
   onReactionUpdate,
 }) => {
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const { addReaction, removeReaction } = useMessages();
+  const [showPicker, setShowPicker] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleAddReaction = async (emoji) => {
+  const handleReaction = async (emoji) => {
     try {
       setLoading(true);
-      await messageApi.addReaction(messageId, emoji, token);
-      setShowEmojiPicker(false);
+      const hasReaction = reactions[emoji];
+      if (hasReaction) {
+        await removeReaction(messageId, emoji);
+      } else {
+        await addReaction(messageId, emoji);
+      }
       onReactionUpdate && onReactionUpdate();
     } catch (error) {
-      console.error("Failed to add reaction:", error);
+      console.error("Reaction failed:", error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleRemoveReaction = async (emoji) => {
-    try {
-      setLoading(true);
-      await messageApi.removeReaction(messageId, emoji, token);
-      onReactionUpdate && onReactionUpdate();
-    } catch (error) {
-      console.error("Failed to remove reaction:", error);
-    } finally {
-      setLoading(false);
+      setShowPicker(false);
     }
   };
 
   return (
-    <div className="message-reactions">
-      {/* Display existing reactions */}
-      <div className="reactions-display">
-        {Object.entries(reactions).map(([emoji, userIds]) => (
-          <button
-            key={emoji}
-            className="reaction-button"
-            onClick={() => handleRemoveReaction(emoji)}
-            title={`${userIds.length} reaction${userIds.length !== 1 ? "s" : ""}`}
-            disabled={loading}
-          >
-            <span className="emoji">{emoji}</span>
-            {userIds.length > 0 && (
-              <span className="count">{userIds.length}</span>
-            )}
-          </button>
-        ))}
-      </div>
+    <div className="message-reactions-wrapper relative flex items-center gap-1 z-10">
+      {/* Existing reactions */}
+      {Object.entries(reactions).map(([emoji, count]) => (
+        <button
+          key={emoji}
+          className="reaction-btn flex items-center gap-1 px-2 py-1 text-xs bg-gray-900/80 hover:bg-gray-800 border border-gray-700 hover:border-gray-600 rounded-full transition-all shadow-sm hover:shadow-md text-white min-w-[32px] justify-center backdrop-blur-sm"
+          onClick={() => handleReaction(emoji)}
+          disabled={loading}
+          title={`Remove ${emoji} reaction`}
+        >
+          <span>{emoji}</span>
+          <span className="count font-mono text-[10px] ml-0.5">{count}</span>
+        </button>
+      ))}
 
       {/* Add reaction button */}
-      <div className="add-reaction-wrapper">
+      <div className="add-reaction-container relative">
         <button
-          className="add-reaction-btn"
-          onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+          className="add-reaction-btn flex items-center justify-center w-8 h-8 rounded-full bg-gray-900/70 hover:bg-gray-800 border border-gray-700 hover:border-gray-500 transition-all shadow-sm hover:shadow-md text-gray-400 hover:text-white text-sm z-10"
+          onClick={(e) => {
+            e.stopPropagation();
+            !loading && setShowPicker(!showPicker);
+          }}
           disabled={loading}
           title="Add reaction"
         >
-          😊
+          {loading ? "..." : "+"}
         </button>
 
-        {/* Emoji picker */}
-        {showEmojiPicker && (
-          <div className="emoji-picker">
-            {EMOJI_OPTIONS.map((emoji) => (
+        {/* Emoji picker - positioned ABOVE message */}
+        {showPicker && (
+          <div className="emoji-picker absolute -bottom-14 right-0 w-56 bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl p-2 grid grid-cols-5 gap-1.5 z-50 backdrop-blur-md animate-in slide-in-from-bottom-2 duration-200">
+            {EMOJIS.map((emoji) => (
               <button
                 key={emoji}
-                className="emoji-option"
-                onClick={() => handleAddReaction(emoji)}
+                className="emoji-btn w-12 h-12 rounded-xl hover:bg-gray-800/50 active:bg-gray-700 transition-all text-lg shadow-sm hover:shadow-md flex items-center justify-center group"
+                onClick={() => handleReaction(emoji)}
                 disabled={loading}
               >
-                {emoji}
+                <span>{emoji}</span>
               </button>
             ))}
           </div>

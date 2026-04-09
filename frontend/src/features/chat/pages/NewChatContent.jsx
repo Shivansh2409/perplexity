@@ -9,6 +9,7 @@ const NewChatContent = () => {
   const api = useChatAPI();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const theme = useSelector((state) => state.theme.mode);
   const { chats } = useSelector((state) => state.chat);
   const [inputValue, setInputValue] = useState("");
 
@@ -40,16 +41,28 @@ const NewChatContent = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-[#0a0a0a]">
+    <div
+      className={`flex-1 flex flex-col ${
+        theme === "dark" ? "bg-gray-900" : "bg-white"
+      }`}
+    >
       <div className="flex-1 flex items-center justify-center p-12">
         <div className="text-center">
           <div className="w-20 h-20 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-2xl border border-cyan-400/30">
             <span className="text-xl font-bold text-black">AI</span>
           </div>
-          <h2 className="text-4xl font-bold mb-4 text-white leading-tight">
+          <h2
+            className={`text-4xl font-bold mb-4 leading-tight ${
+              theme === "dark" ? "text-white" : "text-gray-900"
+            }`}
+          >
             The world's most powerful AI.
           </h2>
-          <p className="text-gray-400 mb-12 max-w-lg mx-auto text-lg">
+          <p
+            className={`mb-12 max-w-lg mx-auto text-lg ${
+              theme === "dark" ? "text-gray-400" : "text-gray-600"
+            }`}
+          >
             Ask anything. Get answers instantly.
             <span className="text-cyan-400 font-medium"> Free forever.</span>
           </p>
@@ -63,7 +76,11 @@ const NewChatContent = () => {
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="What would you like to learn about? e.g. 'Explain quantum entanglement'"
-            className="w-full p-6 pr-20 pt-10 text-lg bg-gray-950/50 border border-gray-800/50 rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/50 placeholder-gray-500 backdrop-blur-sm shadow-inner min-h-[100px] transition-all duration-200 hover:shadow-lg"
+            className={`w-full p-6 pr-20 pt-10 text-lg border rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/50 backdrop-blur-sm shadow-inner min-h-[100px] transition-all duration-200 hover:shadow-lg placeholder-gray-500 ${
+              theme === "dark"
+                ? "bg-gray-800/50 border-gray-700/50"
+                : "bg-gray-100/50 border-gray-300/50"
+            }`}
             rows="3"
           />
           <button

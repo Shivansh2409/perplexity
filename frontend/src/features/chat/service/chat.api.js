@@ -82,6 +82,13 @@ export const useChatAPI = () => {
     saveMessage: (...args) => withLoading(chatAPI.saveMessage, ...args),
     editMessage: (...args) => withLoading(chatAPI.editMessage, ...args),
 
+    // Messages - Missing methods
+    removeReaction: (...args) => withLoading(chatAPI.removeReaction, ...args),
+    unpinMessage: (...args) => withLoading(chatAPI.unpinMessage, ...args),
+    unsaveMessage: (...args) => withLoading(chatAPI.unsaveMessage, ...args),
+    getPinnedMessages: (...args) => withLoading(chatAPI.getPinnedMessages, ...args),
+    getSavedMessages: (...args) => withLoading(chatAPI.getSavedMessages, ...args),
+
     // Access
     requestAccess: (...args) => withLoading(chatAPI.requestAccess, ...args),
     getPendingRequests: (...args) =>
