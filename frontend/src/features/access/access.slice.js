@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
-const { chatAPI } = await import("../chat/service/chat.api");
+import { chatAPI } from "../chat/service/chat.api";
 
 // Async Thunks
 export const fetchPendingRequests = createAsyncThunk(

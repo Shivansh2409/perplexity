@@ -1,22 +1,23 @@
-import React, { useEffect, useRef, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import React, { useEffect, useRef } from "react";
+import { useSelector } from "react-redux";
 import Message from "./Message";
 import { PinnedMessageBanner } from "./PinnedMessageBanner";
-import { SavedMessagesPanel } from "./SavedMessagesPanel";
-import "./MessageList.css";
 
 /**
  * MessageList Component
  * Displays all messages with pinned messages banner and unique features
  * Auto-scrolls to latest message
  */
-export const MessageList = ({ messages, chatId }) => {
-  const { user, token } = useSelector((state) => state.auth);
-  const { isOwner } = useSelector((state) => state.chat);
+export const MessageList = ({
+  messages,
+  chatId,
+  permission = "view-only",
+  currentUserId,
+  onMessageChange,
+}) => {
   const theme = useSelector((state) => state.theme.mode);
-  const dispatch = useDispatch();
   const messagesEndRef = useRef(null);
-  const [showSavedPanel, setShowSavedPanel] = useState(false);
+  const isOwner = permission === "edit";
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -27,77 +28,58 @@ export const MessageList = ({ messages, chatId }) => {
   }, [messages]);
 
   const handleMessageUpdate = () => {
-    // Trigger a refresh of messages to see updated reactions, pins, etc.
-    // This would typically come from socket.io event
-    console.log("Message updated");
-  };
-
-  const handleMessageEdit = (messageId, newContent) => {
-    console.log("Message edited:", messageId, newContent);
-  };
-
-  const handleMessageDelete = (messageId) => {
-    console.log("Message deleted:", messageId);
+    onMessageChange?.();
   };
 
   return (
-    <>
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      {/* Pinned Messages Banner */}
+      {chatId && (
+        <div
+          className={`border-b px-4 py-2 ${
+            theme === "dark"
+              ? "border-gray-800 bg-gray-900/50"
+              : "border-gray-200 bg-white"
+          }`}
+        >
+          <PinnedMessageBanner
+            chatId={chatId}
+            isChatOwner={isOwner}
+            onUpdated={onMessageChange}
+          />
+        </div>
+      )}
+
       <div
-        className={`message-list ${theme === "dark" ? "dark-theme" : "light-theme"}`}
+        className={`flex-1 space-y-6 overflow-y-auto p-4 sm:p-6 ${
+          theme === "dark" ? "text-white" : "text-gray-900"
+        }`}
       >
-        {/* Pinned Messages Banner */}
-        {chatId && (
-          <div className="banner-container">
-            <PinnedMessageBanner
-              chatId={chatId}
-              token={token}
-              isChatOwner={isOwner}
+        {messages && messages.length > 0 ? (
+          messages.map((message) => (
+            <Message
+              key={message._id}
+              message={message}
+              isOwnMessage={(message.owner?._id || message.owner?.id || message.owner) === currentUserId}
+              permission={permission}
+              onUpdate={handleMessageUpdate}
             />
+          ))
+        ) : (
+          <div
+            className={`flex h-full flex-col items-center justify-center space-y-2 rounded-2xl border p-12 text-center ${
+              theme === "dark"
+                ? "border-gray-800 bg-gray-900/50 text-gray-400"
+                : "border-gray-200 bg-gray-50 text-gray-500"
+            }`}
+          >
+            <p className="text-lg font-medium">Start a conversation</p>
+            <p className="text-sm">Send a message to begin</p>
           </div>
         )}
-
-        <div className="messages-container">
-          {messages && messages.length > 0 ? (
-            messages.map((message) => (
-              <Message
-                key={message._id}
-                message={message}
-                isCurrentUser={message.owner === user?.id}
-                onReactionUpdate={handleMessageUpdate}
-                onEdit={handleMessageEdit}
-                onDelete={handleMessageDelete}
-              />
-            ))
-          ) : (
-            <div
-              className={`empty-state ${theme === "dark" ? "dark-theme" : "light-theme"}`}
-            >
-              <p className="empty-state-text">Start a conversation</p>
-              <p className="empty-state-subtext">Send a message to begin</p>
-            </div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* Saved Messages Button */}
-        <div className="message-list-footer">
-          <button
-            className={`saved-messages-btn ${theme === "dark" ? "dark-theme" : "light-theme"}`}
-            onClick={() => setShowSavedPanel(true)}
-            title="View saved messages"
-          >
-            💾 Saved Messages
-          </button>
-        </div>
+        <div ref={messagesEndRef} />
       </div>
-
-      {/* Saved Messages Panel */}
-      <SavedMessagesPanel
-        isOpen={showSavedPanel}
-        onClose={() => setShowSavedPanel(false)}
-        token={token}
-      />
-    </>
+    </div>
   );
 };
 

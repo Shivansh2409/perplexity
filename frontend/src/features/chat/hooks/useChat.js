@@ -9,11 +9,7 @@ import {
   setLoading,
   setMessages,
   setConnected,
-  setAIChunk,
-  setAIStatus,
-  setAIComplete,
 } from "../chat.slice";
-import { useAuth } from "../../auth/hooks/useAuth";
 
 // Standalone function - can be called directly from anywhere
 export const fetchChats = async (dispatch) => {
@@ -28,59 +24,81 @@ export const fetchChats = async (dispatch) => {
   }
 };
 
+const getCookie = (name) => {
+  const nameEQ = name + "=";
+  const cookies = document.cookie.split(";");
+  for (let cookie of cookies) {
+    cookie = cookie.trim();
+    if (cookie.indexOf(nameEQ) === 0) {
+      return cookie.substring(nameEQ.length);
+    }
+  }
+  return null;
+};
+
 export const useChat = (chatId) => {
   const dispatch = useDispatch();
-  const { currentChat, chats, connected } = useSelector((state) => state.chat);
-  // const [messages, setMessages] = useState([]);
-  // const [connected, setConnected] = useState(false);
-  const [permissions, setPermissions] = useState("loading");
+  const { currentChat, connected } = useSelector((state) => state.chat);
+  const currentUserId = useSelector(
+    (state) => state.auth.user?._id || state.auth.user?.id,
+  );
   const [localLoading, setLocalLoading] = useState(false);
-
-  /**
-   * Helper function to get token from cookies
-   * @param {string} name - Cookie name
-   * @returns {string|null} - Cookie value or null
-   */
-  const getCookie = (name) => {
-    const nameEQ = name + "=";
-    const cookies = document.cookie.split(";");
-    for (let cookie of cookies) {
-      cookie = cookie.trim();
-      if (cookie.indexOf(nameEQ) === 0) {
-        return cookie.substring(nameEQ.length);
-      }
-    }
-    return null;
-  };
+  const [permission, setPermission] = useState("view-only");
 
   const token = getCookie("token") || localStorage.getItem("token");
+  const resolvePermission = useCallback(
+    (chatData) => {
+      const ownerId =
+        chatData?.chat?.owner?._id ||
+        chatData?.chat?.owner?.id ||
+        chatData?.chat?.owner;
+      const payloadPermission =
+        chatData?.permission ||
+        chatData?.chat?.permission ||
+        chatData?.chat?.userPermission;
+
+      if (payloadPermission) {
+        return payloadPermission;
+      }
+      if (ownerId && currentUserId && ownerId === currentUserId) {
+        return "edit";
+      }
+      return "view-only";
+    },
+    [currentUserId],
+  );
 
   // Socket connection with proper cleanup
   useEffect(() => {
-    let mounted = true;
-    let cleanupSocket = false;
-
-    if (token && chatId) {
-      socketManager
-        .connect(token)
-        .then(() => {
-          if (mounted) {
-            socketManager.joinChatRoom(chatId);
-            dispatch(setConnected(true));
-            cleanupSocket = true;
-          }
-        })
-        .catch(console.error);
+    if (!token || !chatId) {
+      dispatch(setConnected(false));
+      return;
     }
+    let cancelled = false;
+    let joinedRoom = false;
+
+    socketManager
+      .connect(token)
+      .then(() => {
+        if (cancelled) return;
+        socketManager.joinChatRoom(chatId);
+        dispatch(setConnected(true));
+        joinedRoom = true;
+      })
+      .catch((error) => {
+        console.error("Socket connection failed:", error);
+        if (!cancelled) {
+          dispatch(setConnected(false));
+        }
+      });
 
     return () => {
-      mounted = false;
-      // Only try to leave if we successfully joined
-      if (chatId && cleanupSocket && socketManager.isConnected) {
+      cancelled = true;
+      if (joinedRoom && socketManager.isConnected) {
         socketManager.leaveChatRoom(chatId);
       }
     };
-  }, [token, chatId]);
+  }, [token, chatId, dispatch]);
 
   // Load chat data - CLEAN DATA (extract only data, no axios config)
   const loadChatData = useCallback(async () => {
@@ -99,21 +117,15 @@ export const useChat = (chatId) => {
       };
       dispatch(setCurrentChat(cleanChat));
       dispatch(setMessages(chatData.message || []));
-      // setMessages(chatData.message || []);
-
-      // Permission
-      const permissionResponse = await chatAPI.getUserPermission(chatId);
-      const permData = permissionResponse.data || permissionResponse;
-      const cleanPermission = permData.permission;
-      setPermissions(cleanPermission);
+      setPermission(resolvePermission(chatData));
     } catch (error) {
       console.error("Load chat error:", error);
-      setPermissions("no-access");
+      setPermission("no-access");
     } finally {
       dispatch(setLoading(false));
       setLocalLoading(false);
     }
-  }, [chatId, dispatch]);
+  }, [chatId, dispatch, resolvePermission]);
 
   useEffect(() => {
     loadChatData();
@@ -124,50 +136,25 @@ export const useChat = (chatId) => {
     if (!connected) return;
 
     const handleNewMessage = (message) => {
-      // setMessages((prev) => [...prev, message]);
-      console.log(message);
       dispatch(addMessage(message));
     };
-
-    const handleAccessGranted = ({ chatId, title, permission }) => {
-      const newChat = { id: chatId, title, updated: "Just now" };
-      dispatch(setChats([newChat, ...chats]));
-    };
-    socketManager.onAIChunk((chunk) => {
-      dispatch(setAIChunk(chunk));
-    });
-    socketManager.onAIStatus((status) => {
-      dispatch(setAIStatus(status));
-    });
-    socketManager.onAIComplete((message) => {
-      dispatch(setAIComplete(message));
-    });
     socketManager.onMessageReceived(handleNewMessage);
-    socketManager.onAccessGranted(handleAccessGranted);
 
     return () => {
       socketManager.removeListener("message", handleNewMessage);
-      socketManager.removeListener("access_granted", handleAccessGranted);
     };
-  }, [connected, dispatch, chats]);
+  }, [connected, dispatch]);
 
   // Send message
   const sendMessage = async (content) => {
-    console.log("content", content);
-    if (!chatId || !content.trim() || !connected) return;
-    console.log("content_1", content);
+    const trimmedContent = content?.trim();
+    if (!chatId || !trimmedContent || !connected) {
+      return;
+    }
     try {
-      // Add message optimistically to show immediately
-      // const optimisticMessage = {
-      //   _id: `temp-${Date.now()}`,
-      //   content: content.trim(),
-      //   sender: "user",
-      //   timestamp: new Date().toISOString(),
-      // };
-      // dispatch(addMessage(optimisticMessage));
 
       // Send via socket (don't wait for response)
-      socketManager.sendMessage(chatId, content);
+      socketManager.sendMessage(chatId, trimmedContent);
     } catch (error) {
       console.error("Send message failed:", error);
       throw error;
@@ -177,8 +164,8 @@ export const useChat = (chatId) => {
   return {
     connected,
     loading: localLoading,
-    permissions,
     currentChat,
+    permission,
     sendMessage,
     loadChatData,
   };

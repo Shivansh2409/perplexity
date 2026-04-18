@@ -1,5 +1,4 @@
 import React from "react";
-import "./PermissionGate.css";
 
 /**
  * PermissionGate Component
@@ -50,8 +49,8 @@ export const PermissionDenied = ({ permission = "no-access", chatTitle }) => {
   };
 
   return (
-    <div className="permission-denied">
-      <div className="denied-icon">
+    <div className="flex flex-col items-center justify-center p-12 bg-red-50/50 rounded-2xl border border-red-200/50 dark:bg-red-900/20 dark:border-red-800/50 gap-4 text-red-800 dark:text-red-200 max-w-md mx-auto shadow-lg">
+      <div className="w-16 h-16 p-3 bg-red-100/50 dark:bg-red-900/30 rounded-2xl flex items-center justify-center border border-red-200/50 dark:border-red-800/50 shadow-md">
         <svg
           width="40"
           height="40"
@@ -65,7 +64,9 @@ export const PermissionDenied = ({ permission = "no-access", chatTitle }) => {
           <line x1="9" y1="9" x2="15" y2="15" />
         </svg>
       </div>
-      <p className="denied-message">{getMessage()}</p>
+      <p className="text-sm text-center font-medium leading-relaxed px-4">
+        {getMessage()}
+      </p>
     </div>
   );
 };

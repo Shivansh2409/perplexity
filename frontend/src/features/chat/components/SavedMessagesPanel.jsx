@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useSelector } from "react-redux";
 import useMessages from "../hooks/useMessages";
-import "./SavedMessagesPanel.css";
 
 export const SavedMessagesPanel = ({ isOpen, onClose }) => {
   const { getSavedMessages, unsaveMessage } = useMessages();
+  const theme = useSelector((state) => state.theme.mode);
   const [savedMessages, setSavedMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -51,24 +52,30 @@ export const SavedMessagesPanel = ({ isOpen, onClose }) => {
       onClick={onClose}
     >
       <div
-        className="saved-messages-panel w-full max-w-md h-full max-h-[90vh] bg-gray-900 border-l border-gray-800 rounded-l-xl shadow-2xl overflow-hidden flex flex-col"
+        className={`saved-messages-panel w-full max-w-md h-full max-h-[90vh] border-l rounded-l-xl shadow-2xl overflow-hidden flex flex-col transition-colors ${
+          theme === "dark" ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"
+        }`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="panel-header p-6 border-b border-gray-800 flex items-center justify-between">
+        <div className={`panel-header p-6 border-b flex items-center justify-between ${
+          theme === "dark" ? "border-gray-800" : "border-gray-200"
+        }`}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
               <span className="text-sm font-bold text-black">💾</span>
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white">Saved Messages</h2>
-              <p className="text-sm text-gray-400">
+              <h2 className={`text-xl font-bold ${theme === "dark" ? "text-white" : "text-gray-900"}`}>Saved Messages</h2>
+              <p className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
                 {filteredMessages.length} messages
               </p>
             </div>
           </div>
           <button
-            className="p-2 hover:bg-gray-800 rounded-xl transition-colors text-gray-400 hover:text-white"
+            className={`p-2 rounded-xl transition-colors ${
+              theme === "dark" ? "hover:bg-gray-800 text-gray-400 hover:text-white" : "hover:bg-gray-100 text-gray-500 hover:text-gray-900"
+            }`}
             onClick={onClose}
             title="Close"
           >
@@ -77,14 +84,18 @@ export const SavedMessagesPanel = ({ isOpen, onClose }) => {
         </div>
 
         {/* Search */}
-        <div className="p-4 border-b border-gray-800 bg-gray-950/50">
+        <div className={`p-4 border-b ${theme === "dark" ? "border-gray-800 bg-gray-950/50" : "border-gray-200 bg-gray-50"}`}>
           <div className="relative">
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search saved messages..."
-              className="w-full p-3 pl-10 pr-4 bg-gray-900/50 border border-gray-700 rounded-xl text-sm placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-transparent transition-all shadow-inner"
+              className={`w-full p-3 pl-10 pr-4 border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-transparent transition-all shadow-inner ${
+                theme === "dark" 
+                  ? "bg-gray-900/50 border-gray-700 placeholder-gray-500 text-white" 
+                  : "bg-white border-gray-300 placeholder-gray-400 text-gray-900"
+              }`}
             />
             <svg
               className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"
@@ -112,8 +123,10 @@ export const SavedMessagesPanel = ({ isOpen, onClose }) => {
           )}
 
           {!loading && filteredMessages.length === 0 && (
-            <div className="text-center py-20 text-gray-500 space-y-3">
-              <div className="w-20 h-20 bg-gray-800/50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <div className={`text-center py-20 space-y-3 ${theme === "dark" ? "text-gray-500" : "text-gray-400"}`}>
+              <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4 ${
+                theme === "dark" ? "bg-gray-800/50" : "bg-gray-100"
+              }`}>
                 <span className="text-3xl">💾</span>
               </div>
               <p className="text-lg font-medium">No saved messages</p>
@@ -127,7 +140,11 @@ export const SavedMessagesPanel = ({ isOpen, onClose }) => {
             filteredMessages.map((message) => (
               <div
                 key={message._id}
-                className="saved-message-item bg-gray-900/50 border border-gray-800 rounded-xl p-4 hover:bg-gray-900/70 transition-colors shadow-sm hover:shadow-md"
+                className={`saved-message-item border rounded-xl p-4 transition-colors shadow-sm hover:shadow-md ${
+                  theme === "dark" 
+                    ? "bg-gray-900/50 border-gray-800 hover:bg-gray-900/70 text-gray-200" 
+                    : "bg-white border-gray-200 hover:bg-gray-50 text-gray-800"
+                }`}
               >
                 <div className="message-content">
                   <p className="message-text text-sm leading-relaxed mb-2 max-h-24 overflow-y-auto">

@@ -3,7 +3,6 @@ import { useSelector } from "react-redux";
 import { Share2 } from "lucide-react";
 import ShareChatModal from "../../access/components/ShareChatModal";
 import AccessRequestNotification from "../../access/components/AccessRequestNotification";
-import "./ChatHeader.css";
 
 /**
  * ChatHeader Component
@@ -34,32 +33,34 @@ export const ChatHeader = ({
 
   return (
     <>
-      <header
-        className={`chat-header ${theme === "dark" ? "dark-theme" : "light-theme"}`}
-      >
-        <div className="chat-header-content">
-          <div className="chat-title-section">
-            <h1 className="chat-title">{title}</h1>
-            <p className="chat-meta">
+      <header className="sticky top-0 z-20 bg-gray-900/95 border-b border-gray-800/50 px-6 py-4 backdrop-blur-md shadow-lg">
+        <div className="flex flex-1 items-center justify-between gap-4 max-w-7xl mx-auto">
+          <div className="flex flex-col gap-1 min-w-0">
+            <h1 className="text-xl font-bold truncate text-gray-100">
+              {title}
+            </h1>
+            <p className="text-sm text-gray-400 flex items-center gap-2 flex-wrap">
               {participantCount} participant{participantCount !== 1 ? "s" : ""}
               {isOwner && (
-                <span className="owner-indicator">• You own this</span>
+                <span className="px-2 py-0.5 bg-green-500/20 text-green-400 text-xs rounded-full border border-green-500/30 font-mono ml-1">
+                  • You own this
+                </span>
               )}
             </p>
           </div>
 
           {typingText && (
-            <div className="typing-indicator">
-              <span className="typing-text">{typingText}</span>
-              <div className="typing-dots">
-                <span></span>
-                <span></span>
-                <span></span>
+            <div className="flex items-center gap-2 px-4 py-2 bg-cyan-500/10 border border-cyan-500/30 rounded-full text-sm text-cyan-300 font-medium ml-auto">
+              <span>{typingText}</span>
+              <div className="flex gap-1">
+                <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce [animation-delay:0s]"></span>
+                <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce [animation-delay:0.4s]"></span>
               </div>
             </div>
           )}
 
-          <div className="header-actions">
+          <div className="flex items-center gap-3 flex-shrink-0">
             {/* Access Request Notification */}
             {isOwner && <AccessRequestNotification />}
 
@@ -67,7 +68,7 @@ export const ChatHeader = ({
             {isOwner && chatId && (
               <button
                 onClick={() => setShowShareModal(true)}
-                className={`share-btn ${theme === "dark" ? "dark-theme" : "light-theme"}`}
+                className="flex items-center gap-2 px-3 py-2 bg-gray-800/50 hover:bg-gray-700 border border-gray-600 hover:border-cyan-400 text-cyan-300 text-sm font-medium rounded-xl transition-all shadow-sm hover:shadow-md whitespace-nowrap"
                 title="Share this chat"
               >
                 <Share2 size={20} />
@@ -76,26 +77,25 @@ export const ChatHeader = ({
             )}
 
             {/* Permission Indicator */}
-            <div className="permission-indicator">
+            <div className="flex items-center gap-1 px-2.5 py-1.5 bg-gray-800/50 border border-gray-600 rounded-full text-xs font-medium text-gray-200">
               <span
-                className={`permission-badge ${permission.replace("-", "-")}`}
-              >
+                className={`w-2 h-2 rounded-full ${permission === "edit" ? "bg-emerald-400" : permission === "view-only" ? "bg-blue-400" : "bg-gray-500"} animate-pulse inline-block`}
+              ></span>
+              <span>
                 {permission === "no-access"
                   ? "No Access"
                   : permission === "view-only"
                     ? "View Only"
-                    : "Edit Access"}
+                    : "Edit"}
               </span>
             </div>
 
             {/* Connection Status */}
-            <div
-              className={`connection-status ${connected ? "connected" : "offline"}`}
-            >
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all shadow-sm hover:shadow-md backdrop-blur-sm bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400">
               <span
-                className={`status-indicator ${connected ? "live" : "offline"}`}
+                className={`w-3 h-3 rounded-full ${connected ? "bg-emerald-400 animate-ping" : "bg-gray-500 animate-pulse"}`}
               ></span>
-              <span className="text-sm">{connected ? "Live" : "Offline"}</span>
+              <span>{connected ? "Live" : "Offline"}</span>
             </div>
           </div>
         </div>

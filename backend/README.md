@@ -1,161 +1,95 @@
-# Perplexity Backend - AI Chat API
+# Perplexity Clone - Backend API
 
-## 🚀 Quick Start
+This is the backend service for the Perplexity Clone application. It handles user authentication, real-time socket communications, AI interactions (via Gemini and Mistral), chat history management, and complex permission handling.
 
-```bash
-cd backend
-npm install
-npm run dev  # nodemon server.js (port 8080)
+## Tech Stack
+
+- **Node.js & Express**: API Routing and HTTP server.
+- **MongoDB & Mongoose**: Database and object modeling.
+- **Socket.io**: Real-time bidirectional event-based communication.
+- **LangChain**: AI orchestration.
+- **Google Gemini 2.5 Flash / Embeddings**: Main conversational AI and vector embeddings.
+- **Mistral AI**: Used specifically for concise chat title generation.
+- **JWT (JSON Web Tokens)**: Authentication and authorization.
+
+---
+
+## Core Architecture & Data Flow
+
+### 1. Chat & AI Flow
+
+Whenever a user sends a message, the backend processes it in the following order:
+
+1. Saves the User's message to the `Message` collection.
+2. Fetches the entire chat history for context.
+3. Passes the history to **Gemini AI** via Langchain to generate a response.
+4. Saves the AI's response to the database.
+5. Generates **Vector Embeddings** for the entire chat history and updates the `Chat` document.
+6. Returns the message via HTTP (`/flow-up-chat`) or broadcasts it via Socket.io (`message` event).
+
+### 2. Real-Time Sockets
+
+Sockets are heavily utilized to avoid polling and provide a seamless real-time experience:
+
+- **Chatting**: Users emit `send_message`, and the backend broadcasts `message` once the AI replies.
+- **Permissions**: Users can request access to private chats. The server pushes `access_request_received` to the owner instantly. When the owner approves, `access_granted` is emitted back.
+- **Typing Indicators**: Listens for `user_typing` and broadcasts to the respective chat room.
+
+### 3. Permissions & Access Control
+
+Chats have participants and specific map-based permissions (`no-access`, `view-only`, `edit`).
+If User A wants to view User B's chat:
+
+1. User A triggers the `requestAccess` controller.
+2. A pending `AccessRequest` document is created.
+3. User B approves the request (`updateRequestStatus`).
+4. User A is added to the `participants` array with `view-only` permissions by default.
+
+---
+
+## Folder Structure
+
+```text
+src/
+ ├── controllers/       # Route logic (chat, user, access)
+ ├── middleware/        # JWT Authentication interceptors
+ ├── models/            # Mongoose Schemas (User, Chat, Message, AccessRequest)
+ ├── routes/            # Express Routes definitions
+ ├── service/           # External API handling (AI config, Socket events)
+ ├── sockets/           # Socket.io server initialization and connection handlers
+ └── validators/        # Request payload validation
 ```
 
-## 🏗️ Architecture
+---
 
-```
-server.js → app.js → Routes → Controllers → Services → Models
-     ↓
-Socket.IO (real-time chat)
-MongoDB + Mongoose
-Google Gemini + Mistral AI
-```
+## Environment Variables
 
-## 📊 Database Schemas
+Create a `.env` file in the root directory:
 
-### User
-
-```js
-{
-  (username, email, password(hashed));
-}
+```env
+PORT=8080
+MONGODB_URI=your_mongo_connection_string
+JWT_SECRET=your_jwt_secret_key
+GOOGLE_API_KEY=your_gemini_api_key
+MISTRAL_API_KEY=your_mistral_api_key
 ```
 
-### Chat
+---
 
-```js
-{
-  title,
-  createdBy,
-  participants[],
-  permissions: Map<userId, 'no-access'|'view-only'|'edit'>,
-  embedding[]
-}
-```
+## Unique Features
 
-### Message (Rich!)
+This backend incorporates advanced messaging features typical of modern platforms like Slack or Discord:
 
-```js
-{
-  content, owner, chatroom, sender('user'/'bot'),
-  reactions: Map<emoji, [userIds]>,
-  isPinned, pinnedBy, pinnedAt,
-  savedBy[], replyTo, isEdited, editedAt
-}
-```
+- **Message Reactions**: Map-based storage linking emojis to Arrays of ObjectIds.
+- **Pinned Messages**: Chat owners can pin specific messages to the top of the chat context.
+- **Saved Messages**: Users can bookmark messages globally for their personal view.
+- **Message Editing**: Owners can edit their messages, which flags them with `isEdited`.
 
-### AccessRequest
+---
 
-```js
-{
-  (requester, targetUser, chat, status("pending" / "approved" / "rejected"));
-}
-```
+## Getting Started
 
-## 🌐 API Routes (23 total)
-
-### Auth `/api/auth` ✨
-
-| Method | Path        | Auth | Desc             |
-| ------ | ----------- | ---- | ---------------- |
-| POST   | `/register` | -    | Create account   |
-| POST   | `/login`    | -    | JWT cookie login |
-| GET    | `/get-user` | ✓    | Profile          |
-
-### Chat `/api/chat` 🚀 (Core - 12 endpoints)
-
-| Method        | Path                                | Feature             |
-| ------------- | ----------------------------------- | ------------------- |
-| POST          | `/create-chat`                      | New AI chat         |
-| POST          | `/flow-up-chat/:chatId`             | Send msg → AI reply |
-| GET           | `/get-chat/:chatId`                 | Chat + messages     |
-| **Reactions** | POST/DELETE `/message/:id/reaction` | Emoji reacts        |
-| **Pin**       | PUT `/message/:id/pin`              | Owner pins          |
-| **Save**      | PUT `/message/:id/save`             | Personal saves      |
-| PUT           | `/message/:id/edit`                 | Edit own msg        |
-| GET           | `/saved-messages`                   | My saved msgs       |
-
-### Access `/api/access` 🔐
-
-| Method | Path                          | Desc                |
-| ------ | ----------------------------- | ------------------- |
-| POST   | `/request`                    | Request chat access |
-| GET    | `/requests/pending`           | Owner pending reqs  |
-| PUT    | `/requests/:id`               | Approve/Reject      |
-| PUT    | `/permission/:chatId/:userId` | Set perms           |
-| GET    | `/permission/:chatId`         | My permission       |
-
-## 🔌 Socket.IO Events
-
-**Connection Flow:**
-
-```
-Client connect → socketAuthMiddleware → join(userId room)
-                    ↓
-emit('join_room', chatId) → permission check → join(chat room)
-                    ↓
-emit('send_message') → AI response → emit('message') to room
-```
-
-**Real-time Events:**
-
-- **Client → Server**: `join_room`, `send_message`
-- **Server → Client**: `message`, `access_request_received`, `access_granted`, `permission_updated`
-
-## 🎯 Core Business Flows
-
-### 1. Chat Creation
-
-```
-POST /api/chat/create-chat → Mistral(title) → Save Chat → return chatId
-```
-
-### 2. AI Conversation (Dual: HTTP + Socket)
-
-```
-User msg → Save → Gemini(AI reply) → Save → Update embeddings → Emit real-time
-```
-
-### 3. Access Control (Advanced!)
-
-```
-UserA requests → Owner notified (socket) → Approve → Add participant + 'view-only' → Socket notify
-Owner upgrades: 'view-only' → 'edit' → Real-time permission update
-```
-
-## 🧠 AI Integration
-
-- **Responses**: Google Gemini (`gemini-2.5-flash-lite`)
-- **Titles**: Mistral (`mistral-medium-latest`)
-- **Embeddings**: Google (`gemini-embedding-2-preview`)
-
-## ✅ Health Check
-
-**All components functional:**
-
-- ✅ Routes: 23 endpoints (auth, chat, access)
-- ✅ Socket: Auth, rooms, real-time AI
-- ✅ DB: 4 models w/ advanced features
-- ✅ Permissions: Granular Map-based
-- ✅ No syntax errors detected
-
-**Minor issues:**
-
-- `server.soket.js` → rename to `server.socket.js`
-- Add rate limiting
-- Input validation incomplete
-
-## 🛠️ Environment
-
-```
-MONGO_URI, JWT_SECRET, GOOGLE_API_KEY, MISTRAL_API_KEY
-```
-
-Built with ❤️ for AI-powered collaborative chats!
+1. `npm install`
+2. Ensure your MongoDB instance is running.
+3. Set up your `.env` keys.
+4. `npm run dev` (Starts the server on your specified port).

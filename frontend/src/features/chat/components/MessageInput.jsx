@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useSelector } from "react-redux";
-import "./MessageInput.css";
 
 /**
  * MessageInput Component
@@ -55,11 +54,13 @@ export const MessageInput = ({
   }, []);
 
   return (
-    <div
-      className={`message-input-container ${theme === "dark" ? "dark-theme" : "light-theme"}`}
-    >
-      <form onSubmit={handleSendMessage} className="message-input-form">
-        <div className="input-wrapper">
+    <div className={`border-t p-5 pt-4 backdrop-blur-sm transition-colors ${
+      theme === "dark" 
+        ? "border-gray-800/50 bg-gradient-to-t from-gray-950/50 to-transparent" 
+        : "border-gray-200 bg-gradient-to-t from-white/90 to-transparent"
+    }`}>
+      <form onSubmit={handleSendMessage} className="space-y-3">
+        <div className="relative flex items-end gap-2">
           <textarea
             value={message}
             onChange={handleInputChange}
@@ -69,25 +70,28 @@ export const MessageInput = ({
                 : "Type your message..."
             }
             disabled={isDisabled || isLoading}
-            className="message-input"
+            className={`flex-1 min-h-[44px] max-h-[120px] p-4 border rounded-2xl resize-none text-sm focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500 transition-all shadow-inner backdrop-blur-sm ${
+              theme === "dark"
+                ? "bg-gray-900/50 border-gray-700 hover:border-gray-600 placeholder-gray-500 text-white"
+                : "bg-white border-gray-300 hover:border-gray-400 placeholder-gray-400 text-gray-900"
+            }`}
             rows={1}
           />
           <button
             type="submit"
             disabled={!message.trim() || isDisabled || isLoading}
-            className="send-button"
+            className="flex items-center justify-center w-11 h-11 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex-shrink-0"
             aria-label="Send message"
           >
             {isLoading ? (
-              <span className="spinner" />
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
               <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
+                className="w-5 h-5 rotate-[-20deg]"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
+                viewBox="0 0 24 24"
               >
                 <line x1="22" y1="2" x2="11" y2="13" />
                 <polygon points="22 2 15 22 11 13 2 9 22 2" />
@@ -96,7 +100,7 @@ export const MessageInput = ({
           </button>
         </div>
         {isDisabled && (
-          <p className="permission-warning">
+          <p className={`text-xs font-medium px-1 ${theme === "dark" ? "text-orange-400" : "text-orange-500"}`}>
             You have {permission === "view-only" ? "view-only" : "no"} access to
             this chat.
           </p>

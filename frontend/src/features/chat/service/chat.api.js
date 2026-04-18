@@ -1,9 +1,14 @@
 import axios from "axios";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo as reactUseMemo } from "react";
 
 // Base config
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
+const normalizedBaseUrl = API_BASE_URL.endsWith("/")
+  ? API_BASE_URL
+  : `${API_BASE_URL}/`;
 const api = axios.create({
-  baseURL: "http://localhost:8080/api/",
+  baseURL: normalizedBaseUrl,
   withCredentials: true, // JWT cookies
 });
 
@@ -14,10 +19,8 @@ export const chatAPI = {
 
   // CHAT ROUTES
   createChat: async (content) => api.post("chat/create-chat", { content }),
-  flowUpChat: async (chatId, content) =>
-    api.post(`chat/flow-up-chat/${chatId}`, { content }),
   getChat: async (chatId) => api.get(`chat/get-chat/${chatId}`),
-  getAllChats: async () => await api.get("chat/all"),
+  getAllChats: async () => api.get("chat/all"),
 
   // Reactions
   addReaction: async (messageId, emoji) =>
@@ -50,7 +53,7 @@ export const chatAPI = {
   getUserPermission: async (chatId) => api.get(`access/permission/${chatId}`),
 };
 
-// Custom hooks for React (w/ proper naming)
+// Custom hooks for React
 export const useChatAPI = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -69,10 +72,10 @@ export const useChatAPI = () => {
     }
   }, []);
 
-  return {
+  const methods = reactUseMemo(() => ({
     // Chat
+    getUser: (...args) => withLoading(chatAPI.getUser, ...args),
     createChat: (...args) => withLoading(chatAPI.createChat, ...args),
-    flowUpChat: (...args) => withLoading(chatAPI.flowUpChat, ...args),
     getChat: (...args) => withLoading(chatAPI.getChat, ...args),
     getAllChats: (...args) => withLoading(chatAPI.getAllChats, ...args),
 
@@ -86,14 +89,25 @@ export const useChatAPI = () => {
     removeReaction: (...args) => withLoading(chatAPI.removeReaction, ...args),
     unpinMessage: (...args) => withLoading(chatAPI.unpinMessage, ...args),
     unsaveMessage: (...args) => withLoading(chatAPI.unsaveMessage, ...args),
-    getPinnedMessages: (...args) => withLoading(chatAPI.getPinnedMessages, ...args),
-    getSavedMessages: (...args) => withLoading(chatAPI.getSavedMessages, ...args),
+    getPinnedMessages: (...args) =>
+      withLoading(chatAPI.getPinnedMessages, ...args),
+    getSavedMessages: (...args) =>
+      withLoading(chatAPI.getSavedMessages, ...args),
 
     // Access
     requestAccess: (...args) => withLoading(chatAPI.requestAccess, ...args),
     getPendingRequests: (...args) =>
       withLoading(chatAPI.getPendingRequests, ...args),
+    updateRequestStatus: (...args) =>
+      withLoading(chatAPI.updateRequestStatus, ...args),
+    updateUserPermission: (...args) =>
+      withLoading(chatAPI.updateUserPermission, ...args),
+    getUserPermission: (...args) =>
+      withLoading(chatAPI.getUserPermission, ...args),
+  }), [withLoading]);
 
+  return {
+    ...methods,
     loading,
     error,
   };

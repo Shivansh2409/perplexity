@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useSelector } from "react-redux";
 import useMessages from "../hooks/useMessages";
-import "./PinnedMessageBanner.css";
 
 export const PinnedMessageBanner = ({ chatId, isChatOwner, onUnpin }) => {
-  const { getPinnedMessages } = useMessages();
+  const { getPinnedMessages, unpinMessage } = useMessages();
+  const theme = useSelector((state) => state.theme.mode);
   const [pinnedMessages, setPinnedMessages] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -45,10 +46,7 @@ export const PinnedMessageBanner = ({ chatId, isChatOwner, onUnpin }) => {
     try {
       setLoading(true);
       // Call unpin via messages hook
-      await fetch(`/api/chat/message/${currentMessage._id}/unpin`, {
-        method: "PUT",
-        credentials: "include",
-      });
+      await unpinMessage(currentMessage._id);
 
       // Update local state
       const updated = pinnedMessages.filter(
@@ -71,7 +69,11 @@ export const PinnedMessageBanner = ({ chatId, isChatOwner, onUnpin }) => {
   if (loading || pinnedMessages.length === 0) return null;
 
   return (
-    <div className="pinned-message-banner fixed top-20 left-80 right-0 z-40 bg-gradient-to-r from-gray-900/95 to-gray-950/95 border-b border-gray-800/50 backdrop-blur-xl shadow-2xl">
+    <div className={`pinned-message-banner fixed top-20 left-80 right-0 z-40 border-b backdrop-blur-xl shadow-2xl transition-colors ${
+      theme === "dark" 
+        ? "bg-gradient-to-r from-gray-900/95 to-gray-950/95 border-gray-800/50" 
+        : "bg-gradient-to-r from-white/95 to-gray-50/95 border-gray-200"
+    }`}>
       <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
         {/* Left: Pin indicator */}
         <div className="flex items-center gap-3">
@@ -79,13 +81,13 @@ export const PinnedMessageBanner = ({ chatId, isChatOwner, onUnpin }) => {
             <span className="text-lg font-bold text-blue-400">📌</span>
           </div>
           <div>
-            <div className="flex items-center gap-2 text-sm font-medium text-gray-300 mb-1">
+            <div className={`flex items-center gap-2 text-sm font-medium mb-1 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
               <span>Pinned message</span>
               <span className="px-2 py-0.5 bg-blue-500/20 text-blue-400 text-xs rounded-full border border-blue-500/30 font-mono">
                 {currentIndex + 1} / {pinnedMessages.length}
               </span>
             </div>
-            <p className="text-sm max-w-md line-clamp-2 leading-tight text-gray-200">
+            <p className={`text-sm max-w-md line-clamp-2 leading-tight ${theme === "dark" ? "text-gray-200" : "text-gray-800"}`}>
               {currentMessage?.content}
             </p>
           </div>

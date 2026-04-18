@@ -1,6 +1,6 @@
 import React, { useState } from "react";
+import { useSelector } from "react-redux";
 import useMessages from "../hooks/useMessages";
-import "./MessageActionsMenu.css";
 
 export const MessageActionsMenu = ({
   messageId,
@@ -13,6 +13,7 @@ export const MessageActionsMenu = ({
 }) => {
   const { pinMessage, unpinMessage, saveMessage, unsaveMessage, editMessage } =
     useMessages();
+  const theme = useSelector((state) => state.theme.mode);
   const [showMenu, setShowMenu] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(messageContent);
@@ -77,7 +78,11 @@ export const MessageActionsMenu = ({
   return (
     <div className="message-actions-menu">
       <button
-        className="menu-trigger p-1 rounded hover:bg-gray-800 transition-colors"
+        className={`menu-trigger rounded p-1 transition-colors ${
+          theme === "dark"
+            ? "hover:bg-gray-800 text-gray-300"
+            : "hover:bg-gray-200 text-gray-700"
+        }`}
         onClick={(e) => {
           e.stopPropagation();
           setShowMenu(!showMenu);
@@ -91,17 +96,31 @@ export const MessageActionsMenu = ({
       </button>
 
       {showMenu && (
-        <div className="actions-dropdown absolute right-0 mt-1 bg-gray-900 border border-gray-700 rounded-lg shadow-2xl py-1 min-w-[160px] z-50 backdrop-blur-sm">
+        <div
+          className={`actions-dropdown absolute right-0 z-50 mt-1 min-w-[160px] rounded-lg border py-1 shadow-2xl backdrop-blur-sm ${
+            theme === "dark"
+              ? "border-gray-700 bg-gray-900 text-gray-100"
+              : "border-gray-200 bg-white text-gray-800"
+          }`}
+        >
           {/* Save */}
           <button
-            className="action-item w-full text-left px-3 py-2 text-sm hover:bg-gray-800/50 flex items-center gap-2 transition-colors"
+            className={`action-item flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors ${
+              theme === "dark" ? "hover:bg-gray-800/50" : "hover:bg-gray-100"
+            }`}
             onClick={handleSaveToggle}
             disabled={loading}
           >
             <span
-              className={`w-5 h-5 rounded flex items-center justify-center ${isSaved ? "bg-yellow-500/20 text-yellow-400" : "text-gray-400 hover:text-yellow-400"}`}
+              className={`flex h-5 w-5 items-center justify-center rounded ${
+                isSaved
+                  ? "bg-yellow-500/20 text-yellow-400"
+                  : theme === "dark"
+                    ? "text-gray-400 hover:text-yellow-400"
+                    : "text-gray-500 hover:text-yellow-500"
+              }`}
             >
-              {isSaved ? "💾" : "📌"}
+              {isSaved ? "💾" : "🔖"}
             </span>
             {isSaved ? "Unsave" : "Save"}
           </button>
@@ -109,12 +128,20 @@ export const MessageActionsMenu = ({
           {/* Pin (chat owner only) */}
           {isChatOwner && (
             <button
-              className="action-item w-full text-left px-3 py-2 text-sm hover:bg-gray-800/50 flex items-center gap-2 transition-colors"
+              className={`action-item flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors ${
+                theme === "dark" ? "hover:bg-gray-800/50" : "hover:bg-gray-100"
+              }`}
               onClick={handlePinToggle}
               disabled={loading}
             >
               <span
-                className={`w-5 h-5 rounded flex items-center justify-center ${isPinned ? "bg-blue-500/20 text-blue-400" : "text-gray-400 hover:text-blue-400"}`}
+                className={`flex h-5 w-5 items-center justify-center rounded ${
+                  isPinned
+                    ? "bg-blue-500/20 text-blue-400"
+                    : theme === "dark"
+                      ? "text-gray-400 hover:text-blue-400"
+                      : "text-gray-500 hover:text-blue-500"
+                }`}
               >
                 📌
               </span>
@@ -125,11 +152,19 @@ export const MessageActionsMenu = ({
           {/* Edit (message owner) */}
           {isOwner && !isEditing && (
             <button
-              className="action-item w-full text-left px-3 py-2 text-sm hover:bg-gray-800/50 flex items-center gap-2 transition-colors"
+              className={`action-item flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors ${
+                theme === "dark" ? "hover:bg-gray-800/50" : "hover:bg-gray-100"
+              }`}
               onClick={() => setIsEditing(true)}
               disabled={loading}
             >
-              <span className="w-5 h-5 rounded flex items-center justify-center text-gray-400 hover:text-blue-400">
+              <span
+                className={`flex h-5 w-5 items-center justify-center rounded ${
+                  theme === "dark"
+                    ? "text-gray-400 hover:text-blue-400"
+                    : "text-gray-500 hover:text-blue-500"
+                }`}
+              >
                 ✏️
               </span>
               Edit
@@ -139,7 +174,9 @@ export const MessageActionsMenu = ({
           {/* Delete (message owner) */}
           {isOwner && (
             <button
-              className="action-item danger w-full text-left px-3 py-2 text-sm hover:bg-red-500/20 border-t border-gray-700 flex items-center gap-2 transition-colors text-red-400 hover:text-red-300"
+              className={`action-item danger flex w-full items-center gap-2 border-t px-3 py-2 text-left text-sm text-red-400 transition-colors hover:bg-red-500/20 hover:text-red-300 ${
+                theme === "dark" ? "border-gray-700" : "border-gray-200"
+              }`}
               onClick={handleDelete}
               disabled={loading}
             >
