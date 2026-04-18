@@ -5,7 +5,7 @@ import { createChat } from "../chat.slice";
 import { useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import { fetchChats } from "../hooks/useChat";
-import ReactMarkdown from "react-markdown";
+import Markdown from "react-markdown";
 import ThemeToggle from "../../theme/ThemeToggle";
 
 const Sidebar = () => {
@@ -19,8 +19,7 @@ const Sidebar = () => {
 
   const handleNewChat = async () => {
     try {
-      const result = await dispatch(createChat("New chat")).unwrap();
-      navigate(`/chat/${result.chatId}`);
+      navigate(`/`);
     } catch (err) {
       console.error(err);
     }
@@ -98,7 +97,7 @@ const Sidebar = () => {
                     : "text-gray-700 group-hover:text-gray-900"
                 }`}
               >
-                <ReactMarkdown>{chat.title}</ReactMarkdown>
+                <Markdown>{chat.title}</Markdown>
               </div>
               <div
                 className={`text-xs mt-1 ${

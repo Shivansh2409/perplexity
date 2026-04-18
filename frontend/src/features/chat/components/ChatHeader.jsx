@@ -4,6 +4,7 @@ import { Share2, Lock } from "lucide-react";
 import ShareChatModal from "../../access/components/ShareChatModal";
 import AccessRequestNotification from "../../access/components/AccessRequestNotification";
 import { submitAccessRequest } from "../../access/access.slice";
+import Markdown from "react-markdown";
 
 /**
  * ChatHeader Component
@@ -46,16 +47,16 @@ export const ChatHeader = ({
 
   return (
     <>
-      <header className="sticky top-0 z-20 bg-gray-900/95 border-b border-gray-800/50 px-6 py-4 backdrop-blur-md shadow-lg">
+      <header className={`sticky top-0 z-20 ${theme === "dark" ? "bg-gray-900/80 border-gray-800/60" : "bg-white border-gray-200"} px-6 py-4 backdrop-blur-md shadow-lg border-b`}>
         <div className="flex flex-1 items-center justify-between gap-4 max-w-7xl mx-auto">
           <div className="flex flex-col gap-1 min-w-0">
-            <h1 className="text-xl font-bold truncate text-gray-100">
-              {title}
+            <h1 className={`text-xl font-bold truncate ${theme === "dark" ? "text-gray-100" : "text-gray-900"}`}>
+              <Markdown>{title}</Markdown>
             </h1>
-            <p className="text-sm text-gray-400 flex items-center gap-2 flex-wrap">
+            <p className={`truncate text-sm  flex items-center gap-2 flex-wrap ${theme === "dark" ? "text-gray-400" : "text-gray-900"}`}>
               {participantCount} participant{participantCount !== 1 ? "s" : ""}
               {isOwner && (
-                <span className="px-2 py-0.5 bg-green-500/20 text-green-400 text-xs rounded-full border border-green-500/30 font-mono ml-1">
+                <span className= {`px-2 py-0.5 text-xs rounded-full font-mono ml-1 ${theme === "dark" ? "border-green-500/30 bg-green-500/20 text-green-400" : "border-green-500/30 text-green-400"}`}>
                   • You own this
                 </span>
               )}
@@ -63,7 +64,7 @@ export const ChatHeader = ({
           </div>
 
           {typingText && (
-            <div className="flex items-center gap-2 px-4 py-2 bg-cyan-500/10 border border-cyan-500/30 rounded-full text-sm text-cyan-300 font-medium ml-auto">
+            <div className={`flex items-center gap-2 px-4 py-2  border border-cyan-500/30 rounded-full text-sm font-medium ml-auto ${theme === "dark" ? "bg-cyan-500/10 text-cyan-300 " : "bg-cyan-500/10 text-cyan-300 "}`}>
               <span>{typingText}</span>
               <div className="flex gap-1">
                 <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce [animation-delay:0s]"></span>
@@ -94,8 +95,7 @@ export const ChatHeader = ({
               <button
                 onClick={handleRequestAccess}
                 disabled={requestSent || accessLoading}
-                className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-xl transition-all shadow-sm whitespace-nowrap ${
-                  requestSent
+                className= {`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-xl transition-all shadow-sm whitespace-nowrap ${requestSent
                     ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-400"
                     : "bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-400"
                 }`}

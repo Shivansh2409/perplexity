@@ -54,7 +54,7 @@ export const MessageInput = ({
   }, []);
 
   return (
-    <div className={`border-t p-5 pt-4 backdrop-blur-sm transition-colors ${
+    <div className={`border-t p-5 pt-4 backdrop-blur-sm transition-colors shadow-lg ${
       theme === "dark" 
         ? "border-gray-800/50 bg-gradient-to-t from-gray-950/50 to-transparent" 
         : "border-gray-200 bg-gradient-to-t from-white/90 to-transparent"

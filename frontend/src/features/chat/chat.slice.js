@@ -91,7 +91,10 @@ const chatSlice = createSlice({
       state.firstMessageContent = action.payload;
     },
     setAIChunk: (state, action) => {
-      state.ai_chunk = action.payload;
+      state.ai_chunk += action.payload;
+    },
+    clearAIChunk: (state) => {
+      state.ai_chunk = "";
     },
     setAIStatus: (state, action) => {
       state.ai_status = action.payload;
@@ -167,6 +170,7 @@ export const {
   setFirstMessageSent,
   setFirstMessageContent,
   setAIChunk,
+  clearAIChunk,
   setAIStatus,
   setAIComplete,
   toggleSavedMessages,

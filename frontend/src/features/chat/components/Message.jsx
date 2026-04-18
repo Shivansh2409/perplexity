@@ -39,7 +39,7 @@ export default function Message({
       }`}
       
     >
-      {!isOwnMessage && (
+      {!(isOwnMessage && message.sender == "user") && (
         <div className="h-9 w-9 shrink-0 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-lg">
           <div className="flex h-full w-full items-center justify-center">
             <span className="text-sm font-bold text-black">AI</span>
@@ -49,7 +49,7 @@ export default function Message({
 
       <div
         className={`max-w-[85%] rounded-2xl p-4 transition-all duration-200 sm:max-w-[70%] ${
-          isOwnMessage
+          (isOwnMessage && message.sender == "user")
             ? theme === "dark"
               ? "rounded-br-sm border border-cyan-500/20 bg-gradient-to-r from-cyan-500/10 to-blue-600/10 text-gray-100 shadow-lg"
               : "rounded-br-sm border border-blue-200 bg-gradient-to-r from-cyan-100 to-blue-100 text-gray-900 shadow"
@@ -114,7 +114,7 @@ export default function Message({
         </div>
       </div>
 
-      {(message.sender == "bot") && (
+      {!(isOwnMessage && message.sender == "user") && (
         <div
           className={`h-fit rounded-lg border px-2 py-1 text-xs font-medium shadow-sm ${
             theme === "dark"

@@ -9,6 +9,9 @@ import {
   setLoading,
   setMessages,
   setConnected,
+  setAIChunk,
+  setAIStatus,
+  clearAIChunk,
 } from "../chat.slice";
 
 // Standalone function - can be called directly from anywhere
@@ -140,11 +143,31 @@ export const useChat = (chatId) => {
 
     const handleNewMessage = (message) => {
       dispatch(addMessage(message));
+      if (message.sender === "bot") {
+        dispatch(clearAIChunk());
+        dispatch(setAIStatus("complete"));
+      }
     };
+    
+    const handleAIChunk = (data) => {
+      dispatch(setAIChunk(data.chunk));
+    };
+
+    const handleAIStatus = (data) => {
+      dispatch(setAIStatus(data.status));
+      if (data.status === "typing") {
+        dispatch(clearAIChunk());
+      }
+    };
+
     socketManager.onMessageReceived(handleNewMessage);
+    socketManager.onAIChunk(handleAIChunk);
+    socketManager.onAIStatus(handleAIStatus);
 
     return () => {
       socketManager.removeListener("message", handleNewMessage);
+      socketManager.removeListener("ai-chunk", handleAIChunk);
+      socketManager.removeListener("ai-status", handleAIStatus);
     };
   }, [connected, dispatch]);
 

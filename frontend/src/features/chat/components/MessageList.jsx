@@ -16,6 +16,7 @@ export const MessageList = ({
   onMessageChange,
 }) => {
   const theme = useSelector((state) => state.theme.mode);
+  const { ai_chunk, ai_status } = useSelector((state) => state.chat);
   const messagesEndRef = useRef(null);
   const isOwner = permission === "edit";
 
@@ -25,7 +26,7 @@ export const MessageList = ({
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, ai_chunk]);
 
   const handleMessageUpdate = () => {
     onMessageChange?.();
@@ -77,6 +78,32 @@ export const MessageList = ({
             <p className="text-sm">Send a message to begin</p>
           </div>
         )}
+
+        {/* AI Typing Indicator / Streaming Chunk */}
+        {ai_status === "typing" && (
+          ai_chunk ? (
+            <Message
+              key="ai-chunk-temp"
+              message={{
+                _id: "ai-chunk-temp",
+                sender: "bot",
+                content: ai_chunk,
+                createdAt: new Date().toISOString()
+              }}
+              isOwnMessage={false}
+              permission={permission}
+            />
+          ) : (
+            <div className="flex justify-start mb-6">
+              <div className={`flex items-center gap-1.5 p-4 rounded-xl shadow-sm border ${theme === "dark" ? "bg-gray-900/80 border-gray-800/60" : "bg-white border-gray-200"}`}>
+                <span className="w-1.5 h-1.5 bg-cyan-500 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                <span className="w-1.5 h-1.5 bg-cyan-500 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                <span className="w-1.5 h-1.5 bg-cyan-500 rounded-full animate-bounce"></span>
+              </div>
+            </div>
+          )
+        )}
+
         <div ref={messagesEndRef} />
       </div>
     </div>
