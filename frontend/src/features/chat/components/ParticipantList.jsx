@@ -31,7 +31,7 @@ export const ParticipantList = ({
 
       <div className="pt-4 divide-y divide-gray-800/20">
         {participants.map((participant) => {
-          const isOwnerParticipant = participant._id === chatOwner?._id;
+          const isOwnerParticipant = participant._id === chatOwner?._id || participant._id === chatOwner;
           const currentPermission = permissions[participant._id] || "no-access";
 
           return (

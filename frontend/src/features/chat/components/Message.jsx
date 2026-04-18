@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { MessageReactions } from "./MessageReactions";
 import { MessageActionsMenu } from "./MessageActionsMenu";
+import { CloudCog } from "lucide-react";
+import  Markdown from "react-markdown"
 
 export default function Message({
   message,
@@ -27,15 +29,15 @@ export default function Message({
 
   const refreshMessage = () => {
     onUpdate && onUpdate();
+    console.log(message)
   };
 
   return (
     <div
       className={`group relative mb-6 flex gap-3 transition-all duration-200 ${
-        isOwnMessage ? "justify-end" : "justify-start"
+        (message.sender == "user") ? "justify-end" : "justify-start"
       }`}
-      onMouseEnter={() => setShowActions(true)}
-      onMouseLeave={() => setShowActions(false)}
+      
     >
       {!isOwnMessage && (
         <div className="h-9 w-9 shrink-0 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-lg">
@@ -55,6 +57,8 @@ export default function Message({
               ? "rounded-bl-sm border border-gray-800/60 bg-gray-900/80 text-gray-100 shadow-lg"
               : "rounded-bl-sm border border-gray-200 bg-white text-gray-900 shadow"
         }`}
+        onMouseEnter={() => setShowActions(true)}
+        onMouseLeave={() => setShowActions(false)}
       >
         {isPinned && (
           <div className="absolute -top-2 left-3 rounded-full border border-blue-500/40 bg-blue-500/90 px-2 py-0.5 text-xs font-medium text-white shadow-md">
@@ -63,7 +67,10 @@ export default function Message({
         )}
 
         <p className="max-w-full break-words text-sm leading-relaxed">
-          {message.content}
+          {message.sender=="bot"? 
+          <Markdown>{message.content}</Markdown>:
+          message.content}
+
         </p>
 
         <div
@@ -100,13 +107,14 @@ export default function Message({
                 isOwner={isOwnMessage}
                 isChatOwner={isChatOwner}
                 onRefresh={refreshMessage}
+                sender={message.sender}
               />
             </div>
           )}
         </div>
       </div>
 
-      {!isOwnMessage && (
+      {(message.sender == "bot") && (
         <div
           className={`h-fit rounded-lg border px-2 py-1 text-xs font-medium shadow-sm ${
             theme === "dark"

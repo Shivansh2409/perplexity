@@ -51,7 +51,10 @@ export const useChat = (chatId) => {
       const ownerId =
         chatData?.chat?.owner?._id ||
         chatData?.chat?.owner?.id ||
-        chatData?.chat?.owner;
+        chatData?.chat?.owner ||
+        chatData?.chat?.createdBy?._id ||
+        chatData?.chat?.createdBy?.id ||
+        chatData?.chat?.createdBy;
       const payloadPermission =
         chatData?.permission ||
         chatData?.chat?.permission ||

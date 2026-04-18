@@ -13,6 +13,7 @@ import { MessageList } from "../components/MessageList";
 import { MessageInput } from "../components/MessageInput";
 import { SavedMessagesPanel } from "../components/SavedMessagesPanel";
 import { ParticipantList } from "../components/ParticipantList";
+import { useChatAPI } from "../service/chat.api";
 
 const ChatContent = () => {
   const { chatId } = useParams();
@@ -33,6 +34,21 @@ const ChatContent = () => {
   const currentUserId = user?._id || user?.id;
   const participants = currentChat?.participants || [];
   const participantCount = participants.length || currentMessages?.length || 0;
+  
+  const { updateUserPermission } = useChatAPI();
+  const [permissionLoading, setPermissionLoading] = useState(false);
+
+  const handlePermissionChange = async (userId, nextPermission) => {
+    setPermissionLoading(true);
+    try {
+      await updateUserPermission(chatId, userId, nextPermission);
+      await loadChatData();
+    } catch (error) {
+      console.error("Failed to update permission:", error);
+    } finally {
+      setPermissionLoading(false);
+    }
+  };
 
   //for first message persistence across chat switches
   useEffect(() => {
@@ -147,12 +163,10 @@ const ChatContent = () => {
           <ParticipantList
             participants={participants}
             permissions={currentChat?.permissions || {}}
-            chatOwner={currentChat?.owner}
+            chatOwner={currentChat?.owner || currentChat?.createdBy}
             isOwner={permission === "edit"}
-            onPermissionChange={(userId, nextPermission) =>
-              console.log("Permission changed:", userId, nextPermission)
-            }
-            loading={false}
+            onPermissionChange={handlePermissionChange}
+            loading={permissionLoading}
           />
         </div>
       )}

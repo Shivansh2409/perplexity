@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { useSelector } from "react-redux";
-import { Share2 } from "lucide-react";
+import { useSelector, useDispatch } from "react-redux";
+import { Share2, Lock } from "lucide-react";
 import ShareChatModal from "../../access/components/ShareChatModal";
 import AccessRequestNotification from "../../access/components/AccessRequestNotification";
+import { submitAccessRequest } from "../../access/access.slice";
 
 /**
  * ChatHeader Component
@@ -18,8 +19,20 @@ export const ChatHeader = ({
   permission = "no-access",
   connected = false,
 }) => {
+  const dispatch = useDispatch();
   const theme = useSelector((state) => state.theme.mode);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [requestSent, setRequestSent] = useState(false);
+  const { loading: accessLoading } = useSelector((state) => state.access);
+
+  const handleRequestAccess = async () => {
+    try {
+      await dispatch(submitAccessRequest(chatId)).unwrap();
+      setRequestSent(true);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const getTypingText = () => {
     const names = Object.values(typingUsers);
@@ -73,6 +86,23 @@ export const ChatHeader = ({
               >
                 <Share2 size={20} />
                 <span>Share</span>
+              </button>
+            )}
+
+            {/* Request Access Button */}
+            {!isOwner && permission === "no-access" && (
+              <button
+                onClick={handleRequestAccess}
+                disabled={requestSent || accessLoading}
+                className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-xl transition-all shadow-sm whitespace-nowrap ${
+                  requestSent
+                    ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-400"
+                    : "bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-400"
+                }`}
+                title="Request access to this chat"
+              >
+                <Lock size={16} />
+                <span>{requestSent ? "Request Sent" : "Request Access"}</span>
               </button>
             )}
 

@@ -10,7 +10,7 @@ export const MessageActionsMenu = ({
   isOwner,
   isChatOwner,
   onRefresh,
-}) => {
+  sender,}) => {
   const { pinMessage, unpinMessage, saveMessage, unsaveMessage, editMessage } =
     useMessages();
   const theme = useSelector((state) => state.theme.mode);
@@ -101,7 +101,7 @@ export const MessageActionsMenu = ({
             theme === "dark"
               ? "border-gray-700 bg-gray-900 text-gray-100"
               : "border-gray-200 bg-white text-gray-800"
-          }`}
+          } ${sender == "bot" ? "left-10 w-20" : "right-10"}`}
         >
           {/* Save */}
           <button
@@ -126,7 +126,7 @@ export const MessageActionsMenu = ({
           </button>
 
           {/* Pin (chat owner only) */}
-          {isChatOwner && (
+          {(isChatOwner) && (
             <button
               className={`action-item flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors ${
                 theme === "dark" ? "hover:bg-gray-800/50" : "hover:bg-gray-100"
