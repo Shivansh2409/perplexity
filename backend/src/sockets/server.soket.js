@@ -17,7 +17,14 @@ export const initSocketServer = (httpServer) => {
   io.use(socketAuthMiddleware);
 
   io.on("connection", (socket) => {
-    const userId = socket.user.user._id.toString();
+    let userId;
+    try {
+      userId = socket.user.user._id.toString();
+    } catch (err) {
+      console.log(err);
+      return;
+    }
+
     socket.join(userId);
     console.log("Client connected: ", socket.id);
 
