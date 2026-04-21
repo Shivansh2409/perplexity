@@ -46,8 +46,8 @@ export const chatAPI = {
   // ACCESS ROUTES (proper names)
   requestAccess: async (chatId) => api.post("access/request", { chatId }),
   getPendingRequests: async () => api.get("access/requests/pending"),
-  updateRequestStatus: async (requestId, status) =>
-    api.put(`access/requests/${requestId}`, { status }),
+  updateRequestStatus: async (requestId, status, permission = "view-only") =>
+    api.put(`access/requests/${requestId}`, { status, permission }),
   updateUserPermission: async (chatId, userId, permission) =>
     api.put(`access/permission/${chatId}/${userId}`, { permission }),
   getUserPermission: async (chatId) => api.get(`access/permission/${chatId}`),

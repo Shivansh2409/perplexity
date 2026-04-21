@@ -33,6 +33,7 @@ export const ParticipantList = ({
         {participants.map((participant) => {
           const isOwnerParticipant = participant._id === chatOwner?._id || participant._id === chatOwner;
           const currentPermission = permissions[participant._id] || "no-access";
+          console.log(participant);
 
           return (
             <div

@@ -33,18 +33,25 @@ export const MessageReactions = ({
   return (
     <div className="message-reactions-wrapper relative flex items-center gap-1 z-10">
       {/* Existing reactions */}
-      {Object.entries(reactions).map(([emoji, count]) => (
-        <button
-          key={emoji}
-          className="reaction-btn flex items-center gap-1 px-2 py-1 text-xs bg-gray-900/80 hover:bg-gray-800 border border-gray-700 hover:border-gray-600 rounded-full transition-all shadow-sm hover:shadow-md text-white min-w-[32px] justify-center backdrop-blur-sm"
-          onClick={() => handleReaction(emoji)}
-          disabled={loading}
-          title={`Remove ${emoji} reaction`}
-        >
-          <span>{emoji}</span>
-          <span className="count font-mono text-[10px] ml-0.5">{count}</span>
-        </button>
-      ))}
+      {Object.entries(reactions).map(([emoji, users]) => {
+        const count = Array.isArray(users) ? users.length : 0;
+        const tooltip = Array.isArray(users)
+          ? users.map(u => (typeof u === 'object' && u.username) ? u.username : "Someone").join(', ')
+          : "";
+
+        return (
+          <button
+            key={emoji}
+            className="reaction-btn flex items-center gap-1 px-2 py-1 text-xs bg-gray-900/80 hover:bg-gray-800 border border-gray-700 hover:border-gray-600 rounded-full transition-all shadow-sm hover:shadow-md text-white min-w-[32px] justify-center backdrop-blur-sm"
+            onClick={() => handleReaction(emoji)}
+            disabled={loading}
+            title={tooltip ? `${emoji} from ${tooltip}` : `Toggle ${emoji} reaction`}
+          >
+            <span>{emoji}</span>
+            <span className="count font-mono text-[10px] ml-0.5">{count}</span>
+          </button>
+        );
+      })}
 
       {/* Add reaction button */}
       <div className="add-reaction-container relative">

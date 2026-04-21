@@ -47,14 +47,14 @@ export async function getChat(req, res) {
       });
     }
 
-    const chat = await chatModel.findById(chatId).select("-embedding");
+    const chat = await chatModel.findById(chatId).select("-embedding").populate("createdBy", "username email profile").populate("participants", "username email profile");
     if (!chat) {
       return res.status(404).json({
         message: "Chat not found",
         success: false,
       });
     }
-    const messages = await messageModel.find({ chatroom: chatId });
+    const messages = await messageModel.find({ chatroom: chatId }).populate("reactions.$*", "email username");
     console.log(messages);
     res.status(200).json({
       message: messages,

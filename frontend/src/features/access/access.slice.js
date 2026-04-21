@@ -29,9 +29,10 @@ export const submitAccessRequest = createAsyncThunk(
 
 export const approveAccessRequest = createAsyncThunk(
   "access/approveAccessRequest",
-  async (requestId, { rejectWithValue }) => {
+  async ({ requestId, permission = "view-only" }, { rejectWithValue }) => {
     try {
-      const response = await chatAPI.updateRequestStatus(requestId, "approved");
+      // NOTE: We need to pass the permission parameter to chatAPI
+      const response = await chatAPI.updateRequestStatus(requestId, "approved", permission);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.message);

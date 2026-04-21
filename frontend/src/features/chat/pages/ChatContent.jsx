@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import { useChat } from "../hooks/useChat";
 import {
   setFirstMessageContent,
@@ -14,12 +14,16 @@ import { MessageInput } from "../components/MessageInput";
 import { SavedMessagesPanel } from "../components/SavedMessagesPanel";
 import { ParticipantList } from "../components/ParticipantList";
 import { useChatAPI } from "../service/chat.api";
+import { submitAccessRequest } from "../../access/access.slice";
+import { Lock } from "lucide-react";
 
 const ChatContent = () => {
   const { chatId } = useParams();
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const theme = useSelector((state) => state.theme.mode);
   const [sending, setSending] = useState(false);
+  const [requestSent, setRequestSent] = useState(false);
   const {
     currentMessages,
     currentChat,
@@ -94,6 +98,47 @@ const ChatContent = () => {
         }`}
       >
         <div className="animate-spin w-8 h-8 border-4 border-cyan-500 border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  const handleRequestAccess = async () => {
+    try {
+      await dispatch(submitAccessRequest(chatId)).unwrap();
+      setRequestSent(true);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  if (permission === "no-access") {
+    return (
+      <div className={`flex h-screen w-full items-center justify-center ${theme === "dark" ? "bg-gray-950/50 backdrop-blur-sm" : "bg-gray-100/50 backdrop-blur-sm"}`}>
+        <div className={`w-full max-w-md rounded-2xl border p-8 shadow-2xl ${theme === "dark" ? "border-gray-800 bg-gray-900 text-white" : "border-gray-200 bg-white text-gray-900"}`}>
+          <div className="flex flex-col items-center text-center space-y-4">
+            <div className="rounded-full bg-cyan-500/20 p-4">
+               <Lock className="h-8 w-8 text-cyan-400" />
+            </div>
+            <h2 className="text-xl font-bold">Access Required</h2>
+            <p className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}>
+              You don't have permission to view "{currentChat?.title || "this chat"}". Would you like to request access from the owner?
+            </p>
+            <button
+              onClick={handleRequestAccess}
+              disabled={requestSent}
+              className={`mt-4 w-full rounded-xl py-3 font-medium transition-all ${
+                requestSent
+                  ? "bg-emerald-500/20 text-emerald-400 cursor-not-allowed"
+                  : "bg-cyan-600 text-white hover:bg-cyan-500"
+              }`}
+            >
+              {requestSent ? "Request Sent" : "Request Access"}
+            </button>
+            <button onClick={() => navigate("/")} className="mt-2 text-sm text-gray-500 hover:text-gray-400">
+               Go Back Home
+            </button>
+          </div>
+        </div>
       </div>
     );
   }

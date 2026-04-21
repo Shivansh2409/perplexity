@@ -86,11 +86,15 @@ export async function getPendingRequests(req, res) {
 export async function updateRequestStatus(req, res) {
   try {
     const { requestId } = req.params;
-    const { status } = req.body;
+    const { status, permission = "view-only" } = req.body;
     const userId = req.user._id;
 
     if (!["approved", "rejected"].includes(status)) {
       return res.status(400).json({ message: "Invalid status" });
+    }
+
+    if (status === "approved" && !["view-only", "edit"].includes(permission)) {
+      return res.status(400).json({ message: "Invalid permission level" });
     }
 
     const request = await AccessRequest.findById(requestId);
@@ -120,14 +124,13 @@ export async function updateRequestStatus(req, res) {
       const chat = await Chat.findById(request.chat);
       if (chat && !chat.participants.includes(request.requester)) {
         chat.participants.push(request.requester);
-        // Set default permission to "view-only" when approved
-        chat.permissions.set(request.requester.toString(), "view-only");
+        chat.permissions.set(request.requester.toString(), permission);
         await chat.save();
       }
       io.to(request.requester.toString()).emit("access_granted", {
         chatId: request.chat,
-        title: chat.title,
-        permission: "view-only",
+        title: chat?.title || "Chat",
+        permission: permission,
       });
     } else {
       io.to(request.requester.toString()).emit("access_rejected", {

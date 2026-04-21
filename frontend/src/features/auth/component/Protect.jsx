@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect,useState } from "react";
 import { Navigate, Outlet } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
 import { useAuth } from "../hooks/useAuth";
@@ -8,6 +8,7 @@ const Protect = ({ children }) => {
   const dispatch = useDispatch();
   const { user, loading } = useSelector((state) => state.auth);
   const { getCurrentUser } = useAuth();
+  const [isInitializing, setIsInitializing] = useState(!user);
 
   useEffect(() => {
     const getUser = async () => {
@@ -21,13 +22,19 @@ const Protect = ({ children }) => {
       } catch (err) {
         console.error("Error fetching current user:", err);
         dispatch(hydrateAuthFailure(err.response?.data?.message || "Authentication failed"));
+      } finally {
+        setIsInitializing(false);
       }
     };
 
-    getUser();
-  }, [dispatch]);
+    if (!user) {
+      getUser();
+    } else {
+      setIsInitializing(false);
+    }
+  }, [dispatch, user, getCurrentUser]);
 
-  if (loading) {
+  if (loading || isInitializing) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0d0d0d] text-[#ececec] font-sans">
         <div className="text-center">
@@ -40,7 +47,7 @@ const Protect = ({ children }) => {
   }
 
   // If no user is found in the auth state, redirect to the login page
-  if (!user && !loading) {
+  if (!user) {
     return <Navigate to="/login" replace />;
   }
 

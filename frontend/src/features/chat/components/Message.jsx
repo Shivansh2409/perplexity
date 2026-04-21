@@ -32,6 +32,8 @@ export default function Message({
     console.log(message)
   };
 
+  console.log(message)
+
   return (
     <div
       className={`group relative mb-6 flex gap-3 transition-all duration-200 ${

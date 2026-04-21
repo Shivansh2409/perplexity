@@ -51,24 +51,37 @@ export const useChat = (chatId) => {
   const token = getCookie("token") || localStorage.getItem("token");
   const resolvePermission = useCallback(
     (chatData) => {
-      const ownerId =
-        chatData?.chat?.owner?._id ||
-        chatData?.chat?.owner?.id ||
-        chatData?.chat?.owner ||
-        chatData?.chat?.createdBy?._id ||
-        chatData?.chat?.createdBy?.id ||
-        chatData?.chat?.createdBy;
-      const payloadPermission =
-        chatData?.permission ||
-        chatData?.chat?.permission ||
-        chatData?.chat?.userPermission;
+      if (!currentUserId || !chatData || !chatData.chat) return "no-access";
 
-      if (payloadPermission) {
-        return payloadPermission;
-      }
-      if (ownerId && currentUserId && ownerId === currentUserId) {
+      const chat = chatData.chat;
+      const ownerId =
+        chat?.owner?._id ||
+        chat?.owner?.id ||
+        chat?.owner ||
+        chat?.createdBy?._id ||
+        chat?.createdBy?.id ||
+        chat?.createdBy;
+
+      if (ownerId === currentUserId) {
         return "edit";
       }
+
+      const participants = chat.participants || [];
+      const isParticipant = participants.some(
+        (p) => p === currentUserId || p._id === currentUserId || p.id === currentUserId
+      );
+
+      if (!isParticipant) {
+        return "no-access";
+      }
+
+      const permissionsMap = chat.permissions || {};
+      const explicitPermission = permissionsMap[currentUserId];
+
+      if (explicitPermission) {
+        return explicitPermission;
+      }
+
       return "view-only";
     },
     [currentUserId],

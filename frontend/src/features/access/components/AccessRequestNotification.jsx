@@ -18,6 +18,7 @@ export const AccessRequestNotification = () => {
   const { pendingRequests, loading } = useSelector((state) => state.access);
   const [showDropdown, setShowDropdown] = useState(false);
   const [resolvingId, setResolvingId] = useState(null);
+  const [selectedPermissions, setSelectedPermissions] = useState({});
 
   useEffect(() => {
     dispatch(fetchPendingRequests());
@@ -25,8 +26,9 @@ export const AccessRequestNotification = () => {
 
   const handleApprove = async (requestId) => {
     setResolvingId(requestId);
+    const permission = selectedPermissions[requestId] || "view-only";
     try {
-      await dispatch(approveAccessRequest(requestId)).unwrap();
+      await dispatch(approveAccessRequest({ requestId, permission })).unwrap();
       // Refresh requests
       dispatch(fetchPendingRequests());
     } catch (err) {
@@ -78,7 +80,7 @@ export const AccessRequestNotification = () => {
       {/* Dropdown Menu */}
       {showDropdown && (
         <div
-          className={`absolute top-12 right-0 w-96 rounded-lg shadow-lg border z-50 ${
+          className={`absolute top-12 right-0 w-[420px] rounded-lg shadow-lg border z-50 ${
             theme === "dark"
               ? "bg-gray-900 border-gray-700"
               : "bg-white border-gray-200"
@@ -113,7 +115,7 @@ export const AccessRequestNotification = () => {
                       : "border-gray-100 hover:bg-gray-50"
                   }`}
                 >
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <p
                         className={`font-medium text-sm ${
@@ -132,12 +134,29 @@ export const AccessRequestNotification = () => {
                       </p>
                     </div>
 
-                    {/* Action Buttons */}
-                    <div className="flex gap-2 flex-shrink-0 ml-2">
+                    {/* Action Area */}
+                    <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                      <select
+                        value={selectedPermissions[request._id] || "view-only"}
+                        onChange={(e) => setSelectedPermissions({
+                          ...selectedPermissions,
+                          [request._id]: e.target.value
+                        })}
+                        disabled={resolvingId === request._id || loading}
+                        className={`text-xs rounded px-2 py-1.5 border transition-colors ${
+                          theme === "dark"
+                            ? "bg-gray-800 border-gray-600 text-gray-200"
+                            : "bg-white border-gray-300 text-gray-700"
+                        }`}
+                      >
+                        <option value="view-only">View Only</option>
+                        <option value="edit">Edit</option>
+                      </select>
+                      
                       <button
                         onClick={() => handleApprove(request._id)}
                         disabled={resolvingId === request._id || loading}
-                        className={`p-2 rounded transition-all ${
+                        className={`p-1.5 rounded transition-all ${
                           theme === "dark"
                             ? "bg-green-600/20 hover:bg-green-600/30 text-green-400 disabled:opacity-50"
                             : "bg-green-100 hover:bg-green-200 text-green-700 disabled:opacity-50"
@@ -149,7 +168,7 @@ export const AccessRequestNotification = () => {
                       <button
                         onClick={() => handleReject(request._id)}
                         disabled={resolvingId === request._id || loading}
-                        className={`p-2 rounded transition-all ${
+                        className={`p-1.5 rounded transition-all ${
                           theme === "dark"
                             ? "bg-red-600/20 hover:bg-red-600/30 text-red-400 disabled:opacity-50"
                             : "bg-red-100 hover:bg-red-200 text-red-700 disabled:opacity-50"

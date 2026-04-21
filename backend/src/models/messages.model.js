@@ -24,7 +24,7 @@ const messageSchema = new mongoose.Schema(
     // Reactions: mapping of emoji to array of user IDs
     reactions: {
       type: Map,
-      of: [mongoose.Schema.Types.ObjectId],
+      of: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
       default: new Map(),
     },
     // Pinned status and who pinned it
