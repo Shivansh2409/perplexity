@@ -1,13 +1,21 @@
 import dotenv from "dotenv";
 dotenv.config();
-
+import * as z from "zod";
 import {
   ChatGoogleGenerativeAI,
   GoogleGenerativeAIEmbeddings,
 } from "@langchain/google-genai";
 
-import { HumanMessage, SystemMessage, AIMessage } from "langchain";
+import {
+  HumanMessage,
+  SystemMessage,
+  AIMessage,
+  tool,
+  createAgent,
+} from "langchain";
 import { ChatMistralAI } from "@langchain/mistralai";
+import { webSearch } from "./internet.service.js";
+import { response } from "express";
 
 const mistralModel = new ChatMistralAI({
   model: "mistral-medium-latest",
@@ -24,34 +32,73 @@ const google_embeddings = new GoogleGenerativeAIEmbeddings({
   model: "gemini-embedding-2-preview",
 });
 
+const webSearchTool = tool(webSearch, {
+  name: "webSearch",
+  description: "Search the web for information",
+  schema: z.object({
+    query: z.string().describe("The query to search the web for"),
+  }),
+
+});
+
+const tools = [webSearchTool];
+
+const agent = createAgent({
+  model: mistralModel,
+  tools,
+});
+
 export async function generateResponse(message, onChunk) {
-  const response = await google_model.stream([
-    new SystemMessage(`
+  // 1. Call agent.stream() instead of agent.invoke()
+  let response = await agent.stream({ 
+    messages: [
+      new SystemMessage(`
             You are a helpful assistant that provides concise and relevant responses to user queries. 
             Your goal is to understand the user's question and provide accurate and informative answers in a clear and concise manner.
+            
+            IMPORTANT: When the user asks for information about recent events, current news, or any topic that requires up-to-date information, YOU MUST use the available web search tool. 
+            Do not rely on your internal knowledge base for such queries. 
+            Use the web search tool to find the most relevant and recent information and then provide a comprehensive answer to the user.
         `),
-    ...(Array.isArray(message)
-      ? message.map((msg) => {
-          if (msg.sender === "user") {
-            return new HumanMessage(msg.content);
-          } else {
-            return new AIMessage(msg.content);
-          }
-        })
-      : [new HumanMessage(message)]),
-  ]);
+      ...(Array.isArray(message)
+        ? message.filter((msg) => msg.content && msg.content.trim() !== "").map((msg) => {
+            if (msg.sender === "user") {
+              return new HumanMessage(msg.content);
+            } else {
+              return new AIMessage(msg.content);
+            }
+          })
+        : [new HumanMessage(message)]),
+    ]
+  },{ streamMode: "messages" });
+
+//   for await (const chunk of stream) {
+//   // Now you are logging the actual data chunks arriving from LangChain/Mistral
+//   console.log("Chunk arrived:", chunk.model_request.messages[0].content); 
+// }x
 
   let fullContent = "";
 
-  for await (const chunk of response) {
-    const content = chunk.content; // Extract text from chunk
-    fullContent += content;
+  // 2. Iterate over the stream as chunks arrive
+  for await (let chunk of response) {
+    // Depending on whether "agent" is a raw model, a chain, or an AgentExecutor, 
+    // the text payload might be under .content (for models) or .output (for agents).
+    console.log("Chunk:", chunk[0].content);
+    let content = chunk[0].content;
 
-    // Call the callback to send this chunk to the socket
-    if (onChunk) onChunk(content);
+    if (content) {
+      if(typeof content === "object"){
+        continue;
+      }
+      fullContent += content;
+
+      // 3. Call the callback to send this chunk to the socket
+      if (onChunk) onChunk(content);
+    }
   }
 
-  response.content = fullContent;
+  console.log("Generated full response:", fullContent);
+  response.content=fullContent;
   return response.content;
 }
 
@@ -66,7 +113,6 @@ export async function generateEmbeddings(message) {
   }
 
   const embeddings = await google_embeddings.embedQuery(textToEmbed);
-  console.log("Generated embeddings:", embeddings);
   return embeddings;
 }
 

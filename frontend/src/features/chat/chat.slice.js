@@ -108,6 +108,14 @@ const chatSlice = createSlice({
     setSavedMessages: (state, action) => {
       state.showSavedMessages = action.payload;
     },
+    updateMessageReaction: (state, action) => {
+      const { messageId, reactions } = action.payload;
+      console.log("fromslice", messageId, reactions);
+      const message = state.currentMessages.find((m) => m._id === messageId);
+      if (message) {
+        message.reactions = reactions;
+      }
+    },
     toggleParticipants: (state) => {
       state.showParticipants = !state.showParticipants;
     },
@@ -175,6 +183,7 @@ export const {
   setAIComplete,
   toggleSavedMessages,
   setSavedMessages,
+  updateMessageReaction,
   toggleParticipants,
   setParticipants,
   setAccessRequests,

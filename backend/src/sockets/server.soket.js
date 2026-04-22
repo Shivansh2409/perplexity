@@ -2,6 +2,7 @@ import { Server } from "socket.io";
 import chatModel from "../models/chats.model.js";
 import { socketAuthMiddleware } from "../middleware/socket.middleware.js";
 import { handleUserMessage } from "../service/socket.service.js";
+import messageModel from "../models/messages.model.js"
 
 let io;
 
@@ -107,6 +108,83 @@ export const initSocketServer = (httpServer) => {
         callback({ success: true });
       } catch (error) {
         callback({ success: false, error: error.message });
+      }
+    });
+
+    socket.on("add_reaction", async (data, callback) => {
+      const { messageId, emoji, chatId } = data;
+      if (!messageId || !emoji || !chatId) {
+        if(callback) callback({ success: false, error: "Missing required fields" });
+        return;
+      }
+
+      try {
+        const message = await messageModel.findById(messageId);
+        if (!message) {
+          if(callback) callback({ success: false, error: "Message not found" });
+          return;
+        }
+
+        if (!message.reactions) message.reactions = new Map();
+        if (!message.reactions.get(emoji)) message.reactions.set(emoji, []);
+
+        const userIds = message.reactions.get(emoji);
+        const hasUser = userIds.some(id => id.toString() === userId);
+        if (!hasUser) {
+          userIds.push(userId);
+          message.reactions.set(emoji, userIds);
+        }
+
+        await message.save();
+        await message.populate("reactions.$*", "email username");
+
+        io.to(chatId).emit("reaction_updated", { 
+          messageId, 
+          reactions: Object.fromEntries(message.reactions) 
+        });
+        if(callback) callback({ success: true });
+      } catch (error) {
+        if(callback) callback({ success: false, error: error.message });
+      }
+    });
+
+    socket.on("remove_reaction", async (data, callback) => {
+      const { messageId, emoji, chatId } = data;
+      if (!messageId || !emoji || !chatId) {
+        if(callback) callback({ success: false, error: "Missing required fields" });
+        return;
+      }
+
+      try {
+        const message = await messageModel.findById(messageId);
+        if (!message) {
+          if(callback) callback({ success: false, error: "Message not found" });
+          return;
+        }
+
+        if (message.reactions && message.reactions.has(emoji)) {
+          const userIds = message.reactions.get(emoji);
+          const index = userIds.findIndex(id => id.toString() === userId);
+          if (index > -1) {
+            userIds.splice(index, 1);
+            if (userIds.length === 0) {
+              message.reactions.delete(emoji);
+            } else {
+              message.reactions.set(emoji, userIds);
+            }
+          }
+        }
+
+        await message.save();
+        await message.populate("reactions.$*", "email username");
+
+        io.to(chatId).emit("reaction_updated", { 
+          messageId, 
+          reactions: message.reactions ? Object.fromEntries(message.reactions) : {} 
+        });
+        if(callback) callback({ success: true });
+      } catch (error) {
+        if(callback) callback({ success: false, error: error.message });
       }
     });
 

@@ -156,6 +156,34 @@ class SocketManager {
   }
 
   /**
+   * Add a reaction to a message
+   * @param {string} chatId - The chat ID
+   * @param {string} messageId - The message ID
+   * @param {string} emoji - The reaction emoji
+   */
+  addReaction(chatId, messageId, emoji) {
+    if (!this.socket?.connected) {
+      console.error("[Socket] Not connected. Cannot add reaction.");
+      return;
+    }
+    this.socket.emit("add_reaction", { chatId, messageId, emoji });
+  }
+
+  /**
+   * Remove a reaction from a message
+   * @param {string} chatId - The chat ID
+   * @param {string} messageId - The message ID
+   * @param {string} emoji - The reaction emoji
+   */
+  removeReaction(chatId, messageId, emoji) {
+    if (!this.socket?.connected) {
+      console.error("[Socket] Not connected. Cannot remove reaction.");
+      return;
+    }
+    this.socket.emit("remove_reaction", { chatId, messageId, emoji });
+  }
+
+  /**
    * Request access to a chat
    * @param {string} chatId - The chat ID
    */
@@ -238,6 +266,14 @@ class SocketManager {
    */
   onUserTyping(callback) {
     this.addListener("user_typing", callback);
+  }
+
+  /**
+   * Listen for reaction updates
+   * @param {Function} callback - Callback function with reaction update data
+   */
+  onReactionUpdated(callback) {
+    this.addListener("reaction_updated", callback);
   }
 
   /**

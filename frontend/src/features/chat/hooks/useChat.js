@@ -12,6 +12,7 @@ import {
   setAIChunk,
   setAIStatus,
   clearAIChunk,
+  updateMessageReaction,
 } from "../chat.slice";
 
 // Standalone function - can be called directly from anywhere
@@ -173,14 +174,20 @@ export const useChat = (chatId) => {
       }
     };
 
+    const handleReactionUpdated = (data) => {
+      dispatch(updateMessageReaction(data));
+    };
+
     socketManager.onMessageReceived(handleNewMessage);
     socketManager.onAIChunk(handleAIChunk);
     socketManager.onAIStatus(handleAIStatus);
+    socketManager.onReactionUpdated(handleReactionUpdated);
 
     return () => {
       socketManager.removeListener("message", handleNewMessage);
       socketManager.removeListener("ai-chunk", handleAIChunk);
       socketManager.removeListener("ai-status", handleAIStatus);
+      socketManager.removeListener("reaction_updated", handleReactionUpdated);
     };
   }, [connected, dispatch]);
 

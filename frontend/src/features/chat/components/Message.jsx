@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import { MessageReactions } from "./MessageReactions";
 import { MessageActionsMenu } from "./MessageActionsMenu";
 import { CloudCog } from "lucide-react";
-import  Markdown from "react-markdown"
+import Markdown from "react-markdown";
 
 export default function Message({
   message,
@@ -29,17 +29,13 @@ export default function Message({
 
   const refreshMessage = () => {
     onUpdate && onUpdate();
-    console.log(message)
   };
-
-  console.log(message)
 
   return (
     <div
       className={`group relative mb-6 flex gap-3 transition-all duration-200 ${
-        (message.sender == "user") ? "justify-end" : "justify-start"
+        message.sender == "user" ? "justify-end" : "justify-start"
       }`}
-      
     >
       {!(isOwnMessage && message.sender == "user") && (
         <div className="h-9 w-9 shrink-0 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-lg">
@@ -51,7 +47,7 @@ export default function Message({
 
       <div
         className={`max-w-[85%] rounded-2xl p-4 transition-all duration-200 sm:max-w-[70%] ${
-          (isOwnMessage && message.sender == "user")
+          isOwnMessage && message.sender == "user"
             ? theme === "dark"
               ? "rounded-br-sm border border-cyan-500/20 bg-gradient-to-r from-cyan-500/10 to-blue-600/10 text-gray-100 shadow-lg"
               : "rounded-br-sm border border-blue-200 bg-gradient-to-r from-cyan-100 to-blue-100 text-gray-900 shadow"
@@ -69,10 +65,11 @@ export default function Message({
         )}
 
         <p className="max-w-full break-words text-sm leading-relaxed">
-          {message.sender=="bot"? 
-          <Markdown>{message.content}</Markdown>:
-          message.content}
-
+          {message.sender == "bot" ? (
+            <Markdown>{message.content}</Markdown>
+          ) : (
+            message.content
+          )}
         </p>
 
         <div
@@ -97,9 +94,10 @@ export default function Message({
           {showActions && (
             <div className="ml-auto flex items-center gap-1">
               <MessageReactions
+                chatId={message.chatroom}
                 messageId={message._id}
                 reactions={message.reactions || {}}
-                onReactionUpdate={refreshMessage}
+                currentUserId={currentUserId}
               />
               <MessageActionsMenu
                 messageId={message._id}

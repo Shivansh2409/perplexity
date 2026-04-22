@@ -1,27 +1,30 @@
 import React, { useState } from "react";
-import useMessages from "../hooks/useMessages";
+import socketManager from "../../config/socket";
 
 const EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🎉", "🔥", "✨", "🙌", "👏"];
 
 export const MessageReactions = ({
+  chatId,
   messageId,
   reactions = {},
-  onReactionUpdate,
+  currentUserId,
 }) => {
-  const { addReaction, removeReaction } = useMessages();
   const [showPicker, setShowPicker] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleReaction = async (emoji) => {
     try {
       setLoading(true);
-      const hasReaction = reactions[emoji];
-      if (hasReaction) {
-        await removeReaction(messageId, emoji);
+      const users = reactions[emoji];
+      const hasReacted = Array.isArray(users) && users.some(u => 
+        (typeof u === 'object' ? u._id === currentUserId || u.id === currentUserId : u === currentUserId)
+      );
+
+      if (hasReacted) {
+        socketManager.removeReaction(chatId, messageId, emoji);
       } else {
-        await addReaction(messageId, emoji);
+        socketManager.addReaction(chatId, messageId, emoji);
       }
-      onReactionUpdate && onReactionUpdate();
     } catch (error) {
       console.error("Reaction failed:", error);
     } finally {
