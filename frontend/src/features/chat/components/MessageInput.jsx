@@ -54,7 +54,7 @@ export const MessageInput = ({
   }, []);
 
   return (
-    <div className={`border-t p-5 pt-4 backdrop-blur-sm transition-colors shadow-lg ${
+    <div className={`border-t p-3 sm:p-4 md:p-5 pt-3 md:pt-4 backdrop-blur-sm transition-colors shadow-lg ${
       theme === "dark" 
         ? "border-gray-800/50 bg-gradient-to-t from-gray-950/50 to-transparent" 
         : "border-gray-200 bg-gradient-to-t from-white/90 to-transparent"
@@ -80,7 +80,11 @@ export const MessageInput = ({
           <button
             type="submit"
             disabled={!message.trim() || isDisabled || isLoading}
-            className="flex items-center justify-center w-11 h-11 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex-shrink-0"
+            className={`flex items-center justify-center w-11 h-11 text-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 flex-shrink-0 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed ${
+              theme === "dark" 
+                ? "bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-500 hover:to-gray-600"
+                : "bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
+            }`}
             aria-label="Send message"
           >
             {isLoading ? (

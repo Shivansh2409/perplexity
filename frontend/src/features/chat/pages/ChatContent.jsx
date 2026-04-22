@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams, useNavigate } from "react-router";
+import { useParams, useNavigate, useOutletContext } from "react-router";
 import { useChat } from "../hooks/useChat";
 import {
   setFirstMessageContent,
@@ -21,6 +21,7 @@ const ChatContent = () => {
   const { chatId } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { onMenuClick } = useOutletContext() || {};
   const theme = useSelector((state) => state.theme.mode);
   const [sending, setSending] = useState(false);
   const [requestSent, setRequestSent] = useState(false);
@@ -156,10 +157,11 @@ const ChatContent = () => {
         participantCount={participantCount}
         isOwner={permission === "edit"}
         connected={connected}
+        onMenuClick={onMenuClick}
       />
 
       <div
-        className={`flex items-center gap-2 border-b px-4 py-3 ${
+        className={`flex items-center flex-wrap gap-2 border-b px-4 py-3 ${
           theme === "dark"
             ? "border-gray-800 bg-gray-900/70"
             : "border-gray-200 bg-gray-50"
@@ -169,7 +171,7 @@ const ChatContent = () => {
           onClick={() => dispatch(toggleSavedMessages())}
           className={`rounded-lg border px-3 py-2 text-xs font-medium transition-all sm:text-sm ${
             showSavedMessages
-              ? "border-cyan-500/30 bg-cyan-500/20 text-cyan-400"
+              ? theme === "dark" ? "border-gray-600 bg-gray-700 text-gray-200" : "border-cyan-500/30 bg-cyan-500/20 text-cyan-400"
               : theme === "dark"
                 ? "border-gray-700 bg-gray-800/80 text-gray-300 hover:bg-gray-800"
                 : "border-gray-300 bg-white text-gray-700 hover:bg-gray-100"
@@ -185,7 +187,7 @@ const ChatContent = () => {
             onClick={() => dispatch(toggleParticipants())}
             className={`rounded-lg border px-3 py-2 text-xs font-medium transition-all sm:text-sm ${
               showParticipants
-                ? "border-cyan-500/30 bg-cyan-500/20 text-cyan-400"
+                ? theme === "dark" ? "border-gray-600 bg-gray-700 text-gray-200" : "border-cyan-500/30 bg-cyan-500/20 text-cyan-400"
                 : theme === "dark"
                   ? "border-gray-700 bg-gray-800/80 text-gray-300 hover:bg-gray-800"
                   : "border-gray-300 bg-white text-gray-700 hover:bg-gray-100"

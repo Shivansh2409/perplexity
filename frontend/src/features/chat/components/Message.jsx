@@ -38,18 +38,18 @@ export default function Message({
       }`}
     >
       {!(isOwnMessage && message.sender == "user") && (
-        <div className="h-9 w-9 shrink-0 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-lg">
+        <div className={`h-9 w-9 shrink-0 rounded-xl shadow-lg ${theme === "dark" ? "bg-gradient-to-br from-gray-300 to-gray-500" : "bg-gradient-to-br from-cyan-500 to-blue-600"}`}>
           <div className="flex h-full w-full items-center justify-center">
-            <span className="text-sm font-bold text-black">AI</span>
+            <span className={`text-sm font-bold ${theme === "dark" ? "text-gray-900" : "text-black"}`}>AI</span>
           </div>
         </div>
       )}
 
       <div
-        className={`max-w-[85%] rounded-2xl p-4 transition-all duration-200 sm:max-w-[70%] ${
+        className={`max-w-[90%] rounded-2xl p-3 sm:p-4 transition-all duration-200 sm:max-w-[75%] md:max-w-[70%] ${
           isOwnMessage && message.sender == "user"
             ? theme === "dark"
-              ? "rounded-br-sm border border-cyan-500/20 bg-gradient-to-r from-cyan-500/10 to-blue-600/10 text-gray-100 shadow-lg"
+              ? "rounded-br-sm border border-gray-700 bg-gray-800/80 text-gray-100 shadow-lg"
               : "rounded-br-sm border border-blue-200 bg-gradient-to-r from-cyan-100 to-blue-100 text-gray-900 shadow"
             : theme === "dark"
               ? "rounded-bl-sm border border-gray-800/60 bg-gray-900/80 text-gray-100 shadow-lg"
