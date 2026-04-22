@@ -75,8 +75,8 @@ graph TD
     Socket <-->|Broadcasts state| Server
     Client -->|HTTP REST| Server
     
-    %% Backend Logic
-    Server <-->|CRUD Operations| DB
+    %%   Backend Logic
+    Server <--->|CRUD Operations| DB
     Server -->|Streams Messages| LangGraph
     
     %% AI Logic
