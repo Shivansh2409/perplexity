@@ -20,7 +20,7 @@ export const initSocketServer = (httpServer) => {
   io.on("connection", (socket) => {
     let userId;
     try {
-      userId = socket.user.user._id.toString();
+      userId = socket.user.user?._id.toString();
     } catch (err) {
       console.log(err);
       return;

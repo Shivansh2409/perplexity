@@ -14,3 +14,42 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Light Theme Scrollbar */
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1; /* tailwind slate-300 */
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8; /* tailwind slate-400 */
+}
+
+/* Dark Theme Scrollbar */
+html.dark ::-webkit-scrollbar-thumb {
+  background: #334155; /* tailwind slate-700 */
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569; /* tailwind slate-600 */
+}
+
+/* Firefox Support */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+html.dark * {
+  scrollbar-color: #334155 transparent;
+}

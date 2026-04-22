@@ -8,6 +8,31 @@ import { fetchChats } from "../hooks/useChat";
 import Markdown from "react-markdown";
 import ThemeToggle from "../../theme/ThemeToggle";
 
+const formatDate = (dateString) => {
+  if (!dateString) return "Just now";
+  const date = new Date(dateString);
+  const now = new Date();
+  
+  // Reset times to compare dates properly
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const itemDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const diffInDays = Math.floor((today - itemDate) / (1000 * 60 * 60 * 24));
+  
+  if (diffInDays === 0) {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } else if (diffInDays === 1) {
+    return "Yesterday";
+  } else if (diffInDays < 7) {
+    return date.toLocaleDateString([], { weekday: 'short' });
+  } else {
+    return date.toLocaleDateString([], { 
+      month: 'short', 
+      day: 'numeric', 
+      year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined 
+    });
+  }
+};
+
 const Sidebar = ({ isOpen, onClose }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -126,7 +151,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                     : "text-gray-500 group-hover:text-gray-600"
                 }`}
               >
-                {chat.updated || "Just now"}
+                {formatDate(chat.updatedAt)}
               </div>
             </div>
           ))

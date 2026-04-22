@@ -177,12 +177,24 @@ export async function pinMessage(req, res) {
 
     // Check if user is owner of the chat
     const chat = await chatModel.findById(message.chatroom);
-    if (chat.createdBy.toString() !== userId) {
-      return res.status(403).json({
-        message: "Only chat owner can pin messages",
+    if (!chat) {
+      return res.status(404).json({
+        message: "Chat not found",
         success: false,
       });
     }
+    if(!chat.participants.includes(userId)) {
+      return res.status(403).json({
+        message: "Only chat participants can pin messages",
+        success: false,
+      });
+    }
+    // if (chat.createdBy.toString() !== userId) {
+    //   return res.status(403).json({
+    //     message: "Only chat owner can pin messages",
+    //     success: false,
+    //   });
+    // }
 
     message.isPinned = true;
     message.pinnedBy = userId;
@@ -218,9 +230,9 @@ export async function unpinMessage(req, res) {
 
     // Check if user is owner of the chat
     const chat = await chatModel.findById(message.chatroom);
-    if (chat.createdBy.toString() !== userId) {
+   if(!chat.participants.includes(userId)) {
       return res.status(403).json({
-        message: "Only chat owner can unpin messages",
+        message: "Only chat participants can pin messages",
         success: false,
       });
     }
