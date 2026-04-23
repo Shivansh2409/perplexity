@@ -433,3 +433,66 @@ export async function getAllChats(req, res) {
     });
   }
 }
+
+// Cosine similarity helper
+function cosineSimilarity(vecA, vecB) {
+  if (!vecA || !vecB || vecA.length === 0 || vecA.length !== vecB.length) return 0;
+  let dotProduct = 0;
+  let normA = 0;
+  let normB = 0;
+  for (let i = 0; i < vecA.length; i++) {
+    dotProduct += vecA[i] * vecB[i];
+    normA += vecA[i] * vecA[i];
+    normB += vecB[i] * vecB[i];
+  }
+  if (normA === 0 || normB === 0) return 0;
+  return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+}
+
+export async function searchChats(req, res) {
+  try {
+    const userId = req.user.id;
+    const { q } = req.query;
+
+    if (!q || q.trim() === "") {
+      return res.status(200).json({
+        chats: [],
+        success: true,
+      });
+    }
+
+    // Generate embedding for query
+    const queryEmbedding = await generateEmbeddings(q);
+
+    // Get user's chats
+    const userChats = await chatModel
+      .find({
+        $or: [{ participants: userId }, { createdBy: userId }],
+      })
+      .sort({ updatedAt: -1 })
+      .lean();
+
+    // Compute similarities
+    const scoredChats = userChats
+      .map((chat) => {
+        const similarity = cosineSimilarity(queryEmbedding, chat.embedding || []);
+        return { ...chat, similarity };
+      })
+      .filter((chat) => chat.similarity > 0.50) // Set threshold
+      .sort((a, b) => b.similarity - a.similarity);
+
+    // Limit to top 15 results
+    const topChats = scoredChats.slice(0, 15);
+
+    res.status(200).json({
+      chats: topChats,
+      success: true,
+    });
+  } catch (err) {
+    console.error("Error in searchChats:", err);
+    res.status(500).json({
+      message: "Internal server error during search",
+      success: false,
+    });
+  }
+}

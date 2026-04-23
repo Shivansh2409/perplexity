@@ -72,7 +72,7 @@ export const MessageReactions = ({
 
         {/* Emoji picker - positioned ABOVE message */}
         {showPicker && (
-          <div className="emoji-picker absolute -bottom-14 right-0 w-56 bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl p-2 grid grid-cols-5 gap-1.5 z-50 backdrop-blur-md animate-in slide-in-from-bottom-2 duration-200">
+          <div className="emoji-picker absolute -bottom-14  right-0 w-56 bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl p-2 grid grid-cols-5 gap-1.5 z-50 backdrop-blur-md animate-in slide-in-from-bottom-2 duration-200">
             {EMOJIS.map((emoji) => (
               <button
                 key={emoji}

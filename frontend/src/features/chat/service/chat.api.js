@@ -21,6 +21,7 @@ export const chatAPI = {
   createChat: async (content) => api.post("chat/create-chat", { content }),
   getChat: async (chatId) => api.get(`chat/get-chat/${chatId}`),
   getAllChats: async () => api.get("chat/all"),
+  searchChats: async (query) => api.get(`chat/search?q=${encodeURIComponent(query)}`),
 
   // Reactions
   addReaction: async (messageId, emoji) =>
@@ -78,6 +79,7 @@ export const useChatAPI = () => {
     createChat: (...args) => withLoading(chatAPI.createChat, ...args),
     getChat: (...args) => withLoading(chatAPI.getChat, ...args),
     getAllChats: (...args) => withLoading(chatAPI.getAllChats, ...args),
+    searchChats: (...args) => withLoading(chatAPI.searchChats, ...args),
 
     // Messages
     addReaction: (...args) => withLoading(chatAPI.addReaction, ...args),

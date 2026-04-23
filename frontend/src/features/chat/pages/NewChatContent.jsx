@@ -106,19 +106,22 @@ const NewChatContent = () => {
           <button
             onClick={handleSend}
             disabled={!inputValue.trim() || api.loading}
-            className={`absolute bottom-4 right-4 md:bottom-6 md:right-6 p-3 rounded-2xl shadow-lg hover:shadow-xl transition-all w-11 h-11 md:w-12 md:h-12 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-white ${
+            className={`absolute bottom-4 right-4 md:bottom-6 md:right-6 p-3 rounded-2xl shadow-lg hover:shadow-xl transition-all w-11 h-11 md:w-12 md:h-12 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-white flex-shrink-0 ${
               theme === "dark"
                 ? "bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-500 hover:to-gray-600"
                 : "bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
             }`}
           >
             <svg
-              className="w-6 h-6 rotate-[-20deg]"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path d="M2 21l21-9-21 9zM20 5l-2 4-3-2-3 3-3-4-2 5h16z" />
-            </svg>
+                className="w-5 h-5 rotate-[-20deg]"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <line x1="22" y1="2" x2="11" y2="13" />
+                <polygon points="22 2 15 22 11 13 2 9 22 2" />
+              </svg>
           </button>
         </div>
       </div>

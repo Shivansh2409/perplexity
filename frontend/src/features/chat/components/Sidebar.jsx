@@ -1,10 +1,11 @@
 import React from "react";
-import { Plus, LogOut, Bell, X } from "lucide-react";
+import { Plus, LogOut, Bell, X, Search } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { createChat } from "../chat.slice";
 import { useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import { fetchChats } from "../hooks/useChat";
+import { useChatAPI } from "../service/chat.api";
 import Markdown from "react-markdown";
 import ThemeToggle from "../../theme/ThemeToggle";
 
@@ -41,6 +42,10 @@ const Sidebar = ({ isOpen, onClose }) => {
   const theme = useSelector((state) => state.theme.mode);
   const { user } = useSelector((state) => state.auth);
   const [showNotificationBell, setShowNotificationBell] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const { searchChats } = useChatAPI();
 
   const handleNewChat = async () => {
     try {
@@ -57,6 +62,28 @@ const Sidebar = ({ isOpen, onClose }) => {
   useEffect(() => {
     fetchChats(dispatch);
   }, [dispatch]);
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(async () => {
+      if (searchQuery.trim()) {
+        setIsSearching(true);
+        try {
+          const results = await searchChats(searchQuery);
+          setSearchResults(results.chats || []);
+        } catch (err) {
+          console.error("Search failed:", err);
+        } finally {
+          setIsSearching(false);
+        }
+      } else {
+        setSearchResults([]);
+      }
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery]); // Note: searchChats is omitted to prevent unnecessary re-renders if it's not memoized properly, though it is in chat.api.js.
+
+  const displayChats = searchQuery.trim() ? searchResults : chats;
 
   return (
     <div
@@ -110,19 +137,47 @@ const Sidebar = ({ isOpen, onClose }) => {
         )}
       </div>
 
+      {/* Search Input */}
+      <div className="px-4 py-3">
+        <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border transition-colors ${
+          theme === "dark" 
+            ? "bg-gray-900 border-gray-700 focus-within:border-gray-500" 
+            : "bg-white border-gray-300 focus-within:border-gray-400"
+        }`}>
+          <Search size={16} className={theme === "dark" ? "text-gray-400" : "text-gray-500"} />
+          <input 
+            type="text" 
+            placeholder="Search chats..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className={`bg-transparent outline-none flex-1 text-sm w-full ${
+              theme === "dark" ? "text-white placeholder-gray-500" : "text-gray-900 placeholder-gray-400"
+            }`}
+          />
+        </div>
+      </div>
+
       {/* Chats List */}
       <div className="flex-1 overflow-y-auto py-2">
-        {chats.length === 0 ? (
+        {isSearching ? (
+          <div className="flex justify-center p-8">
+             <div className="animate-spin w-6 h-6 border-2 border-gray-500 border-t-transparent rounded-full" />
+          </div>
+        ) : displayChats.length === 0 ? (
           <div
             className={`p-12 text-center ${
               theme === "dark" ? "text-gray-500" : "text-gray-400"
             }`}
           >
-            <p className="text-lg mb-4">No conversations yet</p>
-            <p className="text-sm">Start one using the button below</p>
+            <p className="text-sm font-medium mb-1">
+              {searchQuery.trim() ? "No results found" : "No conversations yet"}
+            </p>
+            <p className="text-xs opacity-70">
+              {searchQuery.trim() ? "Try a different search term" : "Start one using the button below"}
+            </p>
           </div>
         ) : (
-          chats.map((chat) => (
+          displayChats.map((chat) => (
             <div
               key={chat._id}
               className={`p-4 cursor-pointer mx-2 rounded-xl transition-all group border-l-4 border-transparent ${
