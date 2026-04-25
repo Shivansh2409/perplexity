@@ -21,16 +21,16 @@ export const useAccess = () => {
 
   const updateRequestStatus = useCallback(
     async (requestId, status) => {
-      return api.updateRequestStatus(requestId, status);
+      return socketManager.updateRequestStatus(requestId, status);
     },
-    [api],
+    [],
   );
 
   const updateUserPermission = useCallback(
     async (chatId, userId, permission) => {
-      return api.updateUserPermission(chatId, userId, permission);
+      return socketManager.updatePermission(chatId, userId, permission);
     },
-    [api],
+    [],
   );
 
   const getUserPermission = useCallback(

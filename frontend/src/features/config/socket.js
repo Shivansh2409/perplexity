@@ -186,14 +186,60 @@ class SocketManager {
   /**
    * Request access to a chat
    * @param {string} chatId - The chat ID
+   * @returns {Promise<any>}
    */
   requestChatAccess(chatId) {
-    if (!this.socket?.connected) {
-      console.error("[Socket] Not connected. Cannot request access.");
-      return;
-    }
+    return new Promise((resolve, reject) => {
+      if (!this.socket?.connected) {
+        console.error("[Socket] Not connected. Cannot request access.");
+        return reject("Not connected");
+      }
 
-    this.socket.emit("request_access", { chatId });
+      this.socket.emit("request_access", { chatId }, (response) => {
+        if (response?.success) resolve(response.data);
+        else reject(response?.error || "Unknown error");
+      });
+    });
+  }
+
+  /**
+   * Update the status of an access request
+   * @param {string} requestId - The request ID
+   * @param {string} status - "approved" or "rejected"
+   * @param {string} permission - "view-only" or "edit"
+   * @returns {Promise<any>}
+   */
+  updateRequestStatus(requestId, status, permission = "view-only") {
+    return new Promise((resolve, reject) => {
+      if (!this.socket?.connected) {
+        return reject("Not connected");
+      }
+
+      this.socket.emit("update_request_status", { requestId, status, permission }, (response) => {
+        if (response?.success) resolve(response);
+        else reject(response?.error || "Unknown error");
+      });
+    });
+  }
+
+  /**
+   * Update the permission of a user in a chat
+   * @param {string} chatId - The chat ID
+   * @param {string} targetUserId - The target user ID
+   * @param {string} permission - "no-access", "view-only", or "edit"
+   * @returns {Promise<any>}
+   */
+  updatePermission(chatId, targetUserId, permission) {
+    return new Promise((resolve, reject) => {
+      if (!this.socket?.connected) {
+        return reject("Not connected");
+      }
+
+      this.socket.emit("update_permission", { chatId, targetUserId, permission }, (response) => {
+        if (response?.success) resolve(response);
+        else reject(response?.error || "Unknown error");
+      });
+    });
   }
 
   /**

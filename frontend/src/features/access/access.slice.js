@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 import { chatAPI } from "../chat/service/chat.api";
+import socketManager from "../config/socket";
 
 // Async Thunks
 export const fetchPendingRequests = createAsyncThunk(
@@ -19,10 +20,10 @@ export const submitAccessRequest = createAsyncThunk(
   "access/submitAccessRequest",
   async (chatId, { rejectWithValue }) => {
     try {
-      const response = await chatAPI.requestAccess(chatId);
-      return response.data;
+      const response = await socketManager.requestChatAccess(chatId);
+      return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || error.message);
+      return rejectWithValue(error.message || error);
     }
   },
 );
@@ -31,11 +32,10 @@ export const approveAccessRequest = createAsyncThunk(
   "access/approveAccessRequest",
   async ({ requestId, permission = "view-only" }, { rejectWithValue }) => {
     try {
-      // NOTE: We need to pass the permission parameter to chatAPI
-      const response = await chatAPI.updateRequestStatus(requestId, "approved", permission);
-      return response.data;
+      const response = await socketManager.updateRequestStatus(requestId, "approved", permission);
+      return response;
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(error.message || error);
     }
   },
 );
@@ -44,10 +44,10 @@ export const rejectAccessRequest = createAsyncThunk(
   "access/rejectAccessRequest",
   async (requestId, { rejectWithValue }) => {
     try {
-      const response = await chatAPI.updateRequestStatus(requestId, "rejected");
-      return response.data;
+      const response = await socketManager.updateRequestStatus(requestId, "rejected");
+      return response;
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(error.message || error);
     }
   },
 );

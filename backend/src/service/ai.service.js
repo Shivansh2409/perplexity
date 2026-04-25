@@ -59,6 +59,7 @@ export async function generateResponse(message, onChunk) {
             IMPORTANT: When the user asks for information about recent events, current news, or any topic that requires up-to-date information, YOU MUST use the available web search tool. 
             Do not rely on your internal knowledge base for such queries. 
             Use the web search tool to find the most relevant and recent information and then provide a comprehensive answer to the user.
+            when ever use this tool add today date in query eg. "What is the weather like in New York today? April 24, 2026**".
         `),
       ...(Array.isArray(message)
         ? message.filter((msg) => msg.content && msg.content.trim() !== "").map((msg) => {
@@ -87,13 +88,13 @@ export async function generateResponse(message, onChunk) {
     let content = chunk[0].content;
 
     if (content) {
-      if(typeof content === "object"){
-        continue;
-      }
+      if(chunk?.[0]?.name === "webSearch"){
+        fullContent += "";
+      }else{
       fullContent += content;
-
-      // 3. Call the callback to send this chunk to the socket
       if (onChunk) onChunk(content);
+      }
+
     }
   }
 

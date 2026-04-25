@@ -2,7 +2,8 @@ import { Server } from "socket.io";
 import chatModel from "../models/chats.model.js";
 import { socketAuthMiddleware } from "../middleware/socket.middleware.js";
 import { handleUserMessage } from "../service/socket.service.js";
-import messageModel from "../models/messages.model.js"
+import messageModel from "../models/messages.model.js";
+import AccessRequest from "../models/accessRequest.model.js";
 
 let io;
 
@@ -183,6 +184,148 @@ export const initSocketServer = (httpServer) => {
           reactions: message.reactions ? Object.fromEntries(message.reactions) : {} 
         });
         if(callback) callback({ success: true });
+      } catch (error) {
+        if(callback) callback({ success: false, error: error.message });
+      }
+    });
+
+    socket.on("request_access", async (data, callback) => {
+      const { chatId } = data;
+      if (!chatId) {
+        if (callback) callback({ success: false, error: "Missing chatId" });
+        return;
+      }
+      try {
+        const chat = await chatModel.findById(chatId);
+        if (!chat) {
+          if (callback) callback({ success: false, error: "Chat not found" });
+          return;
+        }
+
+        const targetUserId = chat.createdBy;
+
+        if (userId === targetUserId.toString()) {
+          if (callback) callback({ success: false, error: "You already have access to this chat." });
+          return;
+        }
+
+        if (chat.participants.some(p => p.toString() === userId)) {
+          if (callback) callback({ success: false, error: "You are already a participant in this chat." });
+          return;
+        }
+
+        const existingRequest = await AccessRequest.findOne({
+          requester: userId,
+          chat: chatId,
+          status: "pending",
+        });
+
+        if (existingRequest) {
+          if (callback) callback({ success: false, error: "Access request already sent." });
+          return;
+        }
+
+        const accessRequest = await AccessRequest.create({
+          requester: userId,
+          targetUser: targetUserId,
+          chat: chatId,
+        });
+
+        io.to(targetUserId.toString()).emit("access_request_received", {
+          ...accessRequest.toObject(),
+          requester: { username: socket.user.user.username }, 
+        });
+
+        if (callback) callback({ success: true, data: accessRequest });
+      } catch (error) {
+        if (callback) callback({ success: false, error: error.message });
+      }
+    });
+
+    socket.on("update_request_status", async (data, callback) => {
+      const { requestId, status, permission = "view-only" } = data;
+      if (!["approved", "rejected"].includes(status)) {
+        if(callback) callback({ success: false, error: "Invalid status" });
+        return;
+      }
+
+      try {
+        const request = await AccessRequest.findById(requestId);
+        if (!request) {
+          if (callback) callback({ success: false, error: "Request not found" });
+          return;
+        }
+
+        if (request.targetUser.toString() !== userId) {
+          if (callback) callback({ success: false, error: "Not authorized" });
+          return;
+        }
+
+        if (request.status !== "pending") {
+          if (callback) callback({ success: false, error: "Request already processed" });
+          return;
+        }
+
+        request.status = status;
+        await request.save();
+
+        if (status === "approved") {
+          const chat = await chatModel.findById(request.chat);
+          if (chat && !chat.participants.includes(request.requester)) {
+            chat.participants.push(request.requester);
+            chat.permissions.set(request.requester.toString(), permission);
+            await chat.save();
+          }
+          io.to(request.requester.toString()).emit("access_granted", {
+            chatId: request.chat,
+            title: chat?.title || "Chat",
+            permission: permission,
+          });
+        } else {
+          io.to(request.requester.toString()).emit("access_rejected", {
+            chatId: request.chat,
+          });
+        }
+
+        if(callback) callback({ success: true });
+      } catch (error) {
+        if(callback) callback({ success: false, error: error.message });
+      }
+    });
+
+    socket.on("update_permission", async (data, callback) => {
+      const { chatId, targetUserId, permission } = data;
+      if (!["no-access", "view-only", "edit"].includes(permission)) {
+        if(callback) callback({ success: false, error: "Invalid permission level" });
+        return;
+      }
+
+      try {
+        const chat = await chatModel.findById(chatId);
+        if (!chat) {
+          if (callback) callback({ success: false, error: "Chat not found" });
+          return;
+        }
+
+        if (chat.createdBy.toString() !== userId) {
+          if (callback) callback({ success: false, error: "Only the chat owner can manage permissions" });
+          return;
+        }
+
+        if (chat.createdBy.toString() === targetUserId) {
+          if (callback) callback({ success: false, error: "Cannot change permission for chat owner" });
+          return;
+        }
+
+        chat.permissions.set(targetUserId, permission);
+        await chat.save();
+
+        io.to(targetUserId.toString()).emit("permission_updated", {
+          chatId: chatId,
+          permission: permission,
+        });
+
+        if(callback) callback({ success: true, permission });
       } catch (error) {
         if(callback) callback({ success: false, error: error.message });
       }

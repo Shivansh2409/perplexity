@@ -13,8 +13,8 @@ import { MessageList } from "../components/MessageList";
 import { MessageInput } from "../components/MessageInput";
 import { SavedMessagesPanel } from "../components/SavedMessagesPanel";
 import { ParticipantList } from "../components/ParticipantList";
-import { useChatAPI } from "../service/chat.api";
 import { submitAccessRequest } from "../../access/access.slice";
+import socketManager from "../../config/socket";
 import { Lock } from "lucide-react";
 
 const ChatContent = () => {
@@ -40,13 +40,12 @@ const ChatContent = () => {
   const participants = currentChat?.participants || [];
   const participantCount = participants.length || currentMessages?.length || 0;
   
-  const { updateUserPermission } = useChatAPI();
   const [permissionLoading, setPermissionLoading] = useState(false);
 
   const handlePermissionChange = async (userId, nextPermission) => {
     setPermissionLoading(true);
     try {
-      await updateUserPermission(chatId, userId, nextPermission);
+      await socketManager.updatePermission(chatId, userId, nextPermission);
       await loadChatData();
     } catch (error) {
       console.error("Failed to update permission:", error);
